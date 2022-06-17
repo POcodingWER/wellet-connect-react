@@ -71,7 +71,7 @@ function App() {
       console.log('선택한 지갑주소:', klaytn.selectedAddress);
     }
   }
-  
+  const test = () =>console.log(11111111);
   return (
     <div className="App">
       <header className="App-header">
@@ -80,6 +80,7 @@ function App() {
         <br />
         <br />
         <button onClick={connectklaytnWellet}> 이거눌러서 kaikas지갑연결</button>
+        <button onClick={test}> test</button>
       </header>
     </div>
   )

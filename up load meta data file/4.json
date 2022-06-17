@@ -1,0 +1,63 @@
+{
+  "image": "https://ipfs.infura.io/ipfs/QmR364aJGF2zFzHhtZpMzBgccxHpGtEBxxgNn9pa4EweLP/4.png",
+  "name": "TestUpLoad#0004",
+  "description": "한국말로 올려도 되나??? 안되면 어떻게 표시될라나 한번올려봐야지",
+  "attributes": [
+    {
+      "trait_type": "Background",
+      "value": "Khaki"
+    },
+    {
+      "trait_type": "Wing",
+      "value": "None"
+    },
+    {
+      "trait_type": "Body",
+      "value": "Body"
+    },
+    {
+      "trait_type": "Necklace",
+      "value": "LALALAY Necklace"
+    },
+    {
+      "trait_type": "Makeup",
+      "value": "Combination Makeup"
+    },
+    {
+      "trait_type": "Sticker",
+      "value": "None"
+    },
+    {
+      "trait_type": "Dress",
+      "value": "Striped Pink Knit"
+    },
+    {
+      "trait_type": "Eyes",
+      "value": "Gashina Eyes"
+    },
+    {
+      "trait_type": "Lipline",
+      "value": "Lipline"
+    },
+    {
+      "trait_type": "Hair",
+      "value": "Blonde Wavy Hair"
+    },
+    {
+      "trait_type": "Earring",
+      "value": "None"
+    },
+    {
+      "trait_type": "Head",
+      "value": "None"
+    },
+    {
+      "trait_type": "Kongz_R",
+      "value": "None"
+    },
+    {
+      "trait_type": "Kongz_L",
+      "value": "None"
+    }
+  ]
+}
