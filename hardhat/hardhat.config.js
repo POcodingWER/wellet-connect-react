@@ -34,11 +34,18 @@ module.exports = {
     //   tags: ["test"]
     // },
     baobob: {
-      url: 'https://kaikas.baobab.klaytn.net:8651',
+      url: 'https://public-node-api.klaytnapi.com/v1/baobab',
       chainId: 1001,
       accounts: [process.env.PRIVATE_KEY],
       saveDeployments: true,
       tags: ["test"]
+    },
+    cypress: {
+      url: 'https://public-node-api.klaytnapi.com/v1/cypress',
+      chainId: 8217,
+      accounts: [process.env.PRIVATE_KEY],
+      saveDeployments: true,
+      tags: ["Belly Gom mint"]
     },
     // baobobDev: {
     //   url: 'https://kaikas.baobab.klaytn.net:8651',
