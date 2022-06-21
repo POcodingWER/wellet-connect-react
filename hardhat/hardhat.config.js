@@ -47,13 +47,6 @@ module.exports = {
       saveDeployments: true,
       tags: ["Belly Gom mint"]
     },
-    // baobobDev: {
-    //   url: 'https://kaikas.baobab.klaytn.net:8651',
-    //   chainId: 1001,
-    //   accounts: [process.env.PRIVATE_KEY] || '',
-    //   saveDeployments: true,
-    //   tags: ["staging"]
-    // },
   },
   namedAccounts: {
     deployer: 0,
