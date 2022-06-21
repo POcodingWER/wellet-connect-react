@@ -9,6 +9,11 @@
       "address": "0x558401B38a5bc20889D37d3A28fBC1131fDd0233",
       "txHash": "0xa14f144fcda8d6e398047590ec74f9da4b74ddd1fdc44e194f32dd805d157f16",
       "kind": "transparent"
+    },
+    {
+      "address": "0xcdda3a66Cef56F781e5DF6856c05720fB101f5a2",
+      "txHash": "0xa93f59527bcbfb7b5a2d78bd46dbb840917947d45fbcb49682a181542de9314f",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -54,6 +59,28 @@
             "type": "t_uint256",
             "contract": "SimpleStorageUpgradeV2",
             "src": "contracts\\SimpleStorageUpgradeV2.sol:9"
+          }
+        ],
+        "types": {
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          }
+        }
+      }
+    },
+    "78a3522f6ca11cf013ba9bf295cc6269e9804dc95c66ec9e0b5d43aa8e6c766c": {
+      "address": "0x3b0462cC5de5B0fB6423fa9EF1BD7800aedC316e",
+      "txHash": "0xf26122abcd94e38cc223e78340c815fa5aeaf0e9288f4f11c1b7caa62aafefe1",
+      "layout": {
+        "storage": [
+          {
+            "label": "storedData",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint256",
+            "contract": "SimpleStorageUpgrade",
+            "src": "contracts\\SimpleStorageUpgrade.sol:8"
           }
         ],
         "types": {

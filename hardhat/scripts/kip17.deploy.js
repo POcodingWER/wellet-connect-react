@@ -3,7 +3,7 @@ const hre = require("hardhat");
 async function main() {
  
   const Greeter = await hre.ethers.getContractFactory("SunmiyaNFT");
-  const greeter = await Greeter.deploy("Hello, Hardhat!",{
+  const greeter = await Greeter.deploy("여기가 name!",{
     args: ["SimpleToken", "Simple"],
     log: true,
   });

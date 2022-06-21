@@ -26,13 +26,13 @@ module.exports = {
     //     blockNumber: 11321231
     //   }
     // },
-    // ropsten: {
-    //   url: 'https://ropsten.infura.io/v3/e81fcce544f741798dc16dcb7b33d9d7',
-    //   chainId: 3,
-    //   accounts: ['47709a087b17d0ea86d1e5fc2253f59b4027ff6fc2ab4f904be56edd63bdca87'],
-    //   saveDeployments: false,
-    //   tags: ["test"]
-    // },
+    ropsten: {
+      url: 'https://ropsten.infura.io/v3/e81fcce544f741798dc16dcb7b33d9d7',
+      chainId: 3,
+      accounts: [process.env.METAMASK_PRIVATE_KEY],
+      saveDeployments: false,
+      tags: ["test"]
+    },
     baobob: {
       url: 'https://public-node-api.klaytnapi.com/v1/baobab',
       chainId: 1001,
@@ -40,13 +40,13 @@ module.exports = {
       saveDeployments: true,
       tags: ["test"]
     },
-    cypress: {
-      url: 'https://public-node-api.klaytnapi.com/v1/cypress',
-      chainId: 8217,
-      accounts: [process.env.PRIVATE_KEY],
-      saveDeployments: true,
-      tags: ["Belly Gom mint"]
-    },
+    // cypress: {
+    //   url: 'https://public-node-api.klaytnapi.com/v1/cypress',
+    //   chainId: 8217,
+    //   accounts: [process.env.PRIVATE_KEY],
+    //   saveDeployments: true,
+    //   tags: ["Belly Gom mint"]
+    // },
   },
   namedAccounts: {
     deployer: 0,
