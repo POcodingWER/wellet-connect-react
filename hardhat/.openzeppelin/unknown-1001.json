@@ -1,0 +1,78 @@
+{
+  "manifestVersion": "3.2",
+  "admin": {
+    "address": "0x93e277d350b021c3605447E9F1114802cF1C5f4B",
+    "txHash": "0xa02cecdc8dd21be6fc9a194550993d328208608f4f937c43c18566adee13a810"
+  },
+  "proxies": [
+    {
+      "address": "0x222A89df3Dc2D9EE140513635F293137b20B3563",
+      "txHash": "0x0cd740e595f1a739b540a5b03b8f3684a2b245752f552484541d23fe68181a13",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x5E1b5fcD53D438459Ea399Ded2F9d02FB75Ecf2A",
+      "txHash": "0x5def99d0fd478e8ef01344c65d9db90ff6009b0d5ced3665287117a60369bf9b",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x8ff32C729D2fBDCda186842CdF619D2ce50B5545",
+      "txHash": "0x0daffda1b952b5d46b8991e0e276ec6ec8111aa42dafe66aa671dc659f26e5ba",
+      "kind": "transparent"
+    }
+  ],
+  "impls": {
+    "25e8ef5fe7424471b5f6975f058115c0b5cb25d2cb7374415d443948107c91f2": {
+      "address": "0x47F29aF6549511dE9e5B806104e7E1E47b7d6a32",
+      "txHash": "0x0fe29399923dacd60c551daa9df91230d1acfc5d34f40776d572676b1eea747b",
+      "layout": {
+        "storage": [
+          {
+            "label": "storedData",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint256",
+            "contract": "SimpleStorageUpgrade",
+            "src": "contracts\\SimpleStorageUpgrade.sol:8"
+          }
+        ],
+        "types": {
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          }
+        }
+      }
+    },
+    "5b6d0b09aacacd918a4e333def5e853f70a88070130ba4f917ab755068c5c163": {
+      "address": "0x88B7BC16453c73880a1A2dc945aB6A1Ffe85e6d6",
+      "txHash": "0xb2bc22eb949c42d9e5a4ae1a8d7eefa6f274241b430ef7aa6de573880a383ab8",
+      "layout": {
+        "storage": [
+          {
+            "label": "storedData",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint256",
+            "contract": "SimpleStorageUpgradeV2",
+            "src": "contracts\\SimpleStorageUpgradeV2.sol:8"
+          },
+          {
+            "label": "storedKey",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_uint256",
+            "contract": "SimpleStorageUpgradeV2",
+            "src": "contracts\\SimpleStorageUpgradeV2.sol:9"
+          }
+        ],
+        "types": {
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          }
+        }
+      }
+    }
+  }
+}

@@ -9,6 +9,7 @@
     "hardhat": "^2.9.9"
   },
   "dependencies": {
-    "@openzeppelin/hardhat-upgrades": "^1.19.0"
+    "@openzeppelin/hardhat-upgrades": "^1.19.0",
+    "dotenv": "^16.0.1"
   }
 }
