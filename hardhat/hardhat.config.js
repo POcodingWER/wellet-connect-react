@@ -29,7 +29,7 @@ module.exports = {
     // ropsten: {
     //   url: 'https://ropsten.infura.io/v3/e81fcce544f741798dc16dcb7b33d9d7',
     //   chainId: 3,
-    //   accounts: [""],
+    //   accounts: ['47709a087b17d0ea86d1e5fc2253f59b4027ff6fc2ab4f904be56edd63bdca87'],
     //   saveDeployments: false,
     //   tags: ["test"]
     // },
@@ -43,7 +43,7 @@ module.exports = {
     // baobobDev: {
     //   url: 'https://kaikas.baobab.klaytn.net:8651',
     //   chainId: 1001,
-    //   accounts: [""],
+    //   accounts: [process.env.PRIVATE_KEY] || '',
     //   saveDeployments: true,
     //   tags: ["staging"]
     // },
@@ -55,7 +55,7 @@ module.exports = {
   mocha: {
     timeout: 300000
   },
-  solidity: "0.8.4",
+  solidity: "0.5.17",
 };
   
 
