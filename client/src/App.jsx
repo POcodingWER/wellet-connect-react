@@ -1,5 +1,6 @@
 import { useState } from 'react'
-
+import OwnableKIP17 from '../../hardhat/artifacts/contracts/SunmiyaNFT.sol/SunmiyaNFT.json'
+// import Caver from "caver-js";
 //메타마스크 어디연결인지 확인
 const chainIdToNetworkName = (chainId) => {
     let network;
@@ -33,7 +34,7 @@ const chainIdToNetworkName = (chainId) => {
   };
 
 function App() {
-
+  const [ContractAddress, setContractAddress] = useState('0x34a9442AaaE417511D022F04466d34e72976158e')
   const connectEthWellet = async () => {
 
     const metamask =  window.ethereum;
@@ -71,16 +72,42 @@ function App() {
       console.log('선택한 지갑주소:', klaytn.selectedAddress);
     }
   }
-  const test = () =>console.log(11111111);
+  const deploy = async () =>{
+    const contract = new window.caver.klay.Contract(OwnableKIP17.abi);
+    const deployer = contract.deploy({
+      data: OwnableKIP17.bytecode,
+      arguments: ['name','symbol'],
+      // arguments: [...args],
+    });
+    const gas = await deployer.estimateGas(); //가스계산 추출
+    const deployed = await deployer.send({  
+      from: klaytn.selectedAddress,
+      gas: gas,
+      value: 0,
+    });
+
+    setContractAddress(deployed.options.address)
+  };
+
+  const test = async () =>{
+    // let caver = new Caver(klaytn);
+    // console.log(caver)
+
+  }
   return (
     <div className="App">
       <header className="App-header">
         <p>지갑 연결</p>
-        <button onClick={connectEthWellet}> 이거눌러서 metamask지갑연결</button>
+        <button onClick={connectEthWellet}> metamask지갑연결</button>
         <br />
         <br />
-        <button onClick={connectklaytnWellet}> 이거눌러서 kaikas지갑연결</button>
-        <button onClick={test}> test</button>
+        <button onClick={connectklaytnWellet}> kaikas지갑연결</button>
+        <br />
+        <br />
+        <button onClick={deploy}> deploy</button>{ContractAddress}
+        <br />
+        <br />
+        <button onClick={test}> deploy</button>{ContractAddress}
       </header>
     </div>
   )
