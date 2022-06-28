@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import OwnableKIP17 from '../../hardhat/artifacts/contracts/SunmiyaNFT.sol/SunmiyaNFT.json'
 // import Caver from "caver-js";
+// import Web3 from "web3";
 //메타마스크 어디연결인지 확인
 const chainIdToNetworkName = (chainId) => {
     let network;
@@ -88,10 +89,10 @@ function App() {
 
     setContractAddress(deployed.options.address)
   };
-
+   
   const test = async () =>{
-    // let caver = new Caver(klaytn);
-    // console.log(caver)
+    // const caver = new Web3(window.caver.klay)
+   console.log('caver')
 
   }
   return (
@@ -107,7 +108,7 @@ function App() {
         <button onClick={deploy}> deploy</button>{ContractAddress}
         <br />
         <br />
-        <button onClick={test}> deploy</button>{ContractAddress}
+        <button onClick={test}> test </button>{ContractAddress}
       </header>
     </div>
   )
