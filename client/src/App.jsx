@@ -76,8 +76,8 @@ function App() {
     const contract = new window.caver.klay.Contract(OwnableKIP17.abi);
     const deployer = contract.deploy({
       data: OwnableKIP17.bytecode,
-      arguments: ['name','symbol'],
-      // arguments: [...args],
+      // arguments: ['name','symbol'],
+      arguments: [...args],
     });
     const gas = await deployer.estimateGas(); //가스계산 추출
     const deployed = await deployer.send({  
