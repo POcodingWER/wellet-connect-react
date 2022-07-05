@@ -14,7 +14,7 @@ import "@klaytn/contracts/KIP/token/KIP17/extensions/KIP17Pausable.sol";        
 import "@klaytn/contracts/KIP/token/KIP17/extensions/KIP17MetadataMintable.sol";    //URi 추가 mintable
 import "@klaytn/contracts/access/Ownable.sol";    //컨트랙트 소유권
 
-contract OwnableKIP17Mint is AccessControlEnumerable, KIP17MetadataMintable, KIP17Burnable,  KIP17Pausable, KIP17Enumerable, Ownable{
+contract OwnableKIP17 is AccessControlEnumerable, KIP17MetadataMintable, KIP17Burnable,  KIP17Pausable, KIP17Enumerable, Ownable{
     constructor(string memory name, string memory symbol) KIP17(name, symbol) {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());       //관리자 role
         _setupRole(MINTER_ROLE, _msgSender());              //AccessControlEnumerable minterRole
@@ -50,5 +50,7 @@ contract OwnableKIP17Mint is AccessControlEnumerable, KIP17MetadataMintable, KIP
      function tokenURI(uint256 tokenId) public view override(KIP17, KIP17URIStorage) returns (string memory) {
         return super.tokenURI(tokenId);
     }
+
+    
 
 }

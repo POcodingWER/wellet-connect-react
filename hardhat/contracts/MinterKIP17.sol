@@ -9,15 +9,20 @@ import "@klaytn/contracts/utils/Counters.sol";  //NFT카운터
 
 import "@klaytn/contracts/access/Ownable.sol"; 
 import "@klaytn/contracts/access/AccessControlEnumerable.sol";   
-import "@klaytn/contracts/KIP/token/KIP7/IKIP7.sol";   
+import "./IKIP17Token.sol";
+// import "@klaytn/contracts/KIP/token/KIP7/IKIP7.sol";   
 
-import "./IKIP17Token.sol";     //인터페이스 생성
+interface Whitelist {
+  function addSaleWhitelist(uint256 _saleId, address[] calldata _addresses, uint256[] calldata _amounts) external;
+  function removeSaleWhitelist(uint256 _saleId, address[] calldata _addresses) external;
+  function isSaleWhitelist(uint256 _saleId, address _address, uint256 _buyAmount, uint256 _amount) external view returns (bool);
+}
 
-contract NFTMinterKIP17 is Ownable, AccessControlEnumerable{
+contract MinterKIP17 is Ownable, AccessControlEnumerable{
    
     enum SaleType {
-    Whitelist,
-    Public
+        Whitelist,
+        Public
     }
 
     // nft Ids
@@ -36,7 +41,7 @@ contract NFTMinterKIP17 is Ownable, AccessControlEnumerable{
     address payable private walletAddress; // 판매금액 판을 지갑 주소
     IKIP17Token private nftToken; // nft 토큰
     // IKIP7 private kip7Token; //kip7 토큰 (kip7로 구매시)
-    // Whitelist private whiteListContract; // 화이트리스트 Contract
+    Whitelist private whiteListContract;    // 화이트리스트 Contract
 
     struct SaleInfo {
     uint256 startBlockNumber;   // 판매 시작하는 #block
@@ -54,19 +59,16 @@ contract NFTMinterKIP17 is Ownable, AccessControlEnumerable{
 
     constructor(
         address payable _walletAddress,         // 판매 금액 받을 지갑 주소
-        address _nftTokenAddress,               // nft 토큰 컨트랙트 주소
+        address _KIP17Address,               // nft 토큰 컨트랙트 주소
+        address _whiteListContractAddress,   // 화이트 리스트 컨트랙트 주소
         // address _kip7Token,                  // kip7 토큰 컨트랙트 주소
-        // address _whiteListContractAddress,   // 화이트 리스트 컨트랙트 주소
         string memory _baseTokenURI             //NFT 메타데이터 Uri
         ) public {
-            walletAddress = _walletAddress;
-
-            nftToken = IKIP17Token(_nftTokenAddress);       //연결 
+            walletAddress = _walletAddress;     //코인보낼 지갑주소
+            nftToken = IKIP17Token(_KIP17Address);       //연결 
+            whiteListContract = Whitelist(_whiteListContractAddress);       //화리연결
             // kip7Token = IKIP7(_kip7Token);
-            // whiteListContract = Whitelist(_whiteListContractAddress);
-
-            baseTokenURI = _baseTokenURI;
-
+            baseTokenURI = _baseTokenURI;           //MetaData 주소 
             _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());   //관리자 선정
     }
 
@@ -94,11 +96,40 @@ contract NFTMinterKIP17 is Ownable, AccessControlEnumerable{
 
         _;
 
-        // 구매 내역 저장 (storage)
+        // 구매 수량 저장 (storage)
         buyAmountByWallet[saleId][msg.sender] += amount;
     }
 
 ///////////////////////////////세일정보
+    //화리
+    function whitelistSale(uint256 saleId, uint256 amount) public payable checkSaleInfo(saleId, amount){
+        require(currentSaleType == SaleType.Whitelist, "Not match saleType");
+
+        SaleInfo memory saleInfo = saleInfoById[saleId];
+    
+        //WL:  isSaleWhitelist(판매유형,주소,구매수량,구매 할 수량)
+        require(whiteListContract.isSaleWhitelist(saleId, msg.sender, buyAmountByWallet[saleId][msg.sender], amount), "not white list");
+
+        require(msg.value != 0, "invalid klay value");
+        require(msg.value == saleInfo.saleKlayAmount*amount, "not enough Klay");
+
+        // 판매금액 전송
+        walletAddress.transfer(msg.value);
+
+        for (uint256 i = 0; i < amount; i++) {
+        uint256 tokenId = tokenIdCounter.current();
+        tokenIdCounter.increment();
+
+        //nft 토큰 전송
+        nftToken.mintWithTokenURI(
+            msg.sender,
+            tokenId,
+            string(abi.encodePacked(baseTokenURI, Strings.toString(tokenId), ".json"))
+        );
+        }
+    }
+
+    //퍼블
     function publicSale(uint256 saleId, uint256 amount) public payable checkSaleInfo(saleId, amount) {
         require(currentSaleType == SaleType.Public, "Not match saleType");  //세일타입  
 
@@ -130,7 +161,6 @@ contract NFTMinterKIP17 is Ownable, AccessControlEnumerable{
 
     
 //////////////////////////////////////////////설정
-    //onlyRole(DEFAULT_ADMIN_ROLE) 사용자 검증 modifier
     function open(uint256 saleId, SaleType saleType) public onlyRole(DEFAULT_ADMIN_ROLE) {        //경매시작
         isOpen = true;              //문이 열려있는지 닫혀잇는지
         currentSaleId = saleId;     //몇번째 세일아이디?
@@ -148,14 +178,14 @@ contract NFTMinterKIP17 is Ownable, AccessControlEnumerable{
         uint256 buyAmountPerWallet,
         uint256 buyAmountPerTrx,
         uint256 saleKlayAmount,
-        uint256 saleKIP7Amount
+        // uint256 saleKIP7Amount
     ) public onlyRole(DEFAULT_ADMIN_ROLE) {
         saleInfoById[saleId].startBlockNumber = startBlockNumber;
         saleInfoById[saleId].lastSaleTokenId = lastSaleTokenId;
         saleInfoById[saleId].buyAmountPerWallet = buyAmountPerWallet;
         saleInfoById[saleId].buyAmountPerTrx = buyAmountPerTrx;
         saleInfoById[saleId].saleKlayAmount = saleKlayAmount;
-        saleInfoById[saleId].saleKIP7Amount = saleKIP7Amount;
+        // saleInfoById[saleId].saleKIP7Amount = saleKIP7Amount;
 
         if (saleId > lastSaleId) {
         lastSaleId = saleId;            //세일아이디 체인지
@@ -182,7 +212,8 @@ contract NFTMinterKIP17 is Ownable, AccessControlEnumerable{
         saleKIP7Amount = saleInfoById[saleId].saleKIP7Amount;
     }
 
-    function setOptions(uint256 _retryBlockAmount, string memory _baseTokenURI) public onlyRole(DEFAULT_ADMIN_ROLE) {       //constructor에서 설정해서 안쓸꺼같지만 나중대비
+    //constructor에서 설정해서 안쓸꺼같지만 나중대비
+    function setOptions(uint256 _retryBlockAmount, string memory _baseTokenURI) public onlyRole(DEFAULT_ADMIN_ROLE) {       
         retryBlockAmount = _retryBlockAmount;
         baseTokenURI = _baseTokenURI;
      }
@@ -206,13 +237,13 @@ contract NFTMinterKIP17 is Ownable, AccessControlEnumerable{
     
     function setAddress(     //constructor에서 설정해서 만약을위해서 
         address _nftToken,
+        address _whiteListContract,
         // address _kip7Token,
-        // address _whiteListContract,
         address payable _walletAddress
     ) public onlyRole(DEFAULT_ADMIN_ROLE) {
         nftToken = IKIP17Token(_nftToken);
         // kip7Token = IKIP7(_kip7Token);
-        // whiteListContract = Whitelist(_whiteListContract);
+        whiteListContract = Whitelist(_whiteListContract);
         walletAddress = _walletAddress;
     }
 
@@ -221,17 +252,17 @@ contract NFTMinterKIP17 is Ownable, AccessControlEnumerable{
         view
         onlyRole(DEFAULT_ADMIN_ROLE)
         returns (
-        IKIP17Token _nftToken,
         // IKIP7 _kip7Token,
-        // Whitelist _whiteListContract,
+        IKIP17Token _nftToken,
+        Whitelist _whiteListContract,
         address _walletAddress
         )
     {
         return (
             // kip7Token, 
-            // whiteListContract, 
-            nftToken, 
-            walletAddress);
+            _nftToken, 
+            _whiteListContract, 
+            _walletAddress);
     }
     
 }
