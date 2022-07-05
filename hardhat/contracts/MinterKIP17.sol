@@ -177,7 +177,7 @@ contract MinterKIP17 is Ownable, AccessControlEnumerable{
         uint256 lastSaleTokenId,    // 순서대로 판매시 마지막 토큰Id (99로 설정시 0부터 99까지 100개 판매가능)
         uint256 buyAmountPerWallet,
         uint256 buyAmountPerTrx,
-        uint256 saleKlayAmount,
+        uint256 saleKlayAmount
         // uint256 saleKIP7Amount
     ) public onlyRole(DEFAULT_ADMIN_ROLE) {
         saleInfoById[saleId].startBlockNumber = startBlockNumber;
