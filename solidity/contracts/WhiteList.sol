@@ -5,8 +5,8 @@
 
 pragma solidity ^0.8.0;
 
-import "@klaytn/contracts/access/Ownable.sol"; 
-import "@klaytn/contracts/access/AccessControlEnumerable.sol";   
+import "./klaytn/access/Ownable.sol"; 
+import "./klaytn/access/AccessControlEnumerable.sol";   
 
 
 

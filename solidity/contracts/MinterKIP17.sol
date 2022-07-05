@@ -5,10 +5,10 @@
 
 pragma solidity ^0.8.0;
 
-import "@klaytn/contracts/utils/Counters.sol";  //NFT카운터 
+import "./klaytn/utils/Counters.sol";  //NFT카운터 
 
-import "@klaytn/contracts/access/Ownable.sol"; 
-import "@klaytn/contracts/access/AccessControlEnumerable.sol";   
+import "./klaytn/access/Ownable.sol"; 
+import "./klaytn/access/AccessControlEnumerable.sol";   
 import "./IKIP17Token.sol";
 // import "@klaytn/contracts/KIP/token/KIP7/IKIP7.sol";   
 

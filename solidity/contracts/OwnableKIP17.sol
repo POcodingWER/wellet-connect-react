@@ -5,14 +5,14 @@
 
 pragma solidity ^0.8.0;
 
-import "@klaytn/contracts/access/AccessControlEnumerable.sol";                  //minterRole
-import "@klaytn/contracts/KIP/token/KIP17/extensions/KIP17Enumerable.sol";      //발행 갯수 nft 카운터 느낌
-// import "@klaytn/contracts/KIP/token/KIP17/extensions/KIP17Mintable.sol";     //KIP17MetadataMintable로 대체
-import "@klaytn/contracts/KIP/token/KIP17/extensions/KIP17Burnable.sol";        //태움  
-import "@klaytn/contracts/KIP/token/KIP17/extensions/KIP17Pausable.sol";        //멈춤  
+import "./klaytn/access/AccessControlEnumerable.sol";                  //minterRole
+import "./klaytn/KIP/token/KIP17/extensions/KIP17Enumerable.sol";      //발행 갯수 nft 카운터 느낌
+// import "./klaytn/KIP/token/KIP17/extensions/KIP17Mintable.sol";     //KIP17MetadataMintable로 대체
+import "./klaytn/KIP/token/KIP17/extensions/KIP17Burnable.sol";        //태움  
+import "./klaytn/KIP/token/KIP17/extensions/KIP17Pausable.sol";        //멈춤  
 
-import "@klaytn/contracts/KIP/token/KIP17/extensions/KIP17MetadataMintable.sol";    //URi 추가 mintable
-import "@klaytn/contracts/access/Ownable.sol";    //컨트랙트 소유권
+import "./klaytn/KIP/token/KIP17/extensions/KIP17MetadataMintable.sol";    //URi 추가 mintable
+import "./klaytn/access/Ownable.sol";    //컨트랙트 소유권
 
 contract OwnableKIP17 is AccessControlEnumerable, KIP17MetadataMintable, KIP17Burnable,  KIP17Pausable, KIP17Enumerable, Ownable{
     constructor(string memory name, string memory symbol) KIP17(name, symbol) {
