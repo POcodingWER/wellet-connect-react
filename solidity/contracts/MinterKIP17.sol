@@ -59,9 +59,9 @@ contract MinterKIP17 is Ownable, AccessControlEnumerable{
 
     constructor(
         address payable _walletAddress,         // 판매 금액 받을 지갑 주소
+        // address _kip7Token,                  // kip7 토큰 컨트랙트 주소
         address _KIP17Address,               // nft 토큰 컨트랙트 주소
         address _whiteListContractAddress,   // 화이트 리스트 컨트랙트 주소
-        // address _kip7Token,                  // kip7 토큰 컨트랙트 주소
         string memory _baseTokenURI             //NFT 메타데이터 Uri
         ) public {
             walletAddress = _walletAddress;     //코인보낼 지갑주소
@@ -236,18 +236,18 @@ contract MinterKIP17 is Ownable, AccessControlEnumerable{
 
     
     function setAddress(     //constructor에서 설정해서 만약을위해서 
+        // address _kip7Token,
         address _nftToken,
         address _whiteListContract,
-        // address _kip7Token,
         address payable _walletAddress
     ) public onlyRole(DEFAULT_ADMIN_ROLE) {
-        nftToken = IKIP17Token(_nftToken);
         // kip7Token = IKIP7(_kip7Token);
+        nftToken = IKIP17Token(_nftToken);
         whiteListContract = Whitelist(_whiteListContract);
         walletAddress = _walletAddress;
     }
 
-    function getAddress()
+     function getAddress()
         public
         view
         onlyRole(DEFAULT_ADMIN_ROLE)
@@ -260,9 +260,9 @@ contract MinterKIP17 is Ownable, AccessControlEnumerable{
     {
         return (
             // kip7Token, 
-            _nftToken, 
-            _whiteListContract, 
-            _walletAddress);
+            nftToken, 
+            whiteListContract, 
+            walletAddress);
     }
     
 }
