@@ -40,7 +40,7 @@ contract MinterKIP17 is Ownable, AccessControlEnumerable{
 
     address payable private walletAddress; // 판매금액 판을 지갑 주소
     IKIP17Token private nftToken; // nft 토큰
-    // IKIP7 private kip7Token; //kip7 토큰 (kip7로 구매시)
+    // IKIP7 private kip7Token;     //kip7 토큰 (kip7로 구매시)
     Whitelist private whiteListContract;    // 화이트리스트 Contract
 
     struct SaleInfo {
