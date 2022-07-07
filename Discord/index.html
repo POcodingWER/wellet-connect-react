@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Belly Gom ?</title>
   </head>
   <body>
     <div>
@@ -28,16 +28,37 @@
       <button id="btn_discord_connect" disabled onclick="onDiscordConnect()">
         디스코드와 지갑 연결
       </button>
-  
 
+    <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/caver-js/1.8.2-rc.2/caver.min.js"
+    integrity="sha512-rTMBo92zKbPeNgx+xiIBMJk83YqrQCpYTwMfePJYqKGlTa5ye6qSToRQaXzmCuPFLNClRU3ZXpU77x8ZvyztDQ=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+     ></script>
 
     <script>
+    const Caver = window.Caver;
+    
     let wallet_addr = null;       //지갑연결해서 가져옴
     let discord_user_id = null;   //
 
     /////////////////////
     async function onDiscordConnect() {
         console.log("onDiscordConnect");
+        
+        //caver 서명
+        const caver = new Caver(window.klaytn);
+        console.log("create caver");
+
+        const sig = await caver.klay.sign("belly gom discord", wallet_addr);
+        console.log("sig", sig);
+
+
+        const v = `0x` + sig.substring(2).substring(128, 130);
+        const r = `0x` + sig.substring(2).substring(0, 64);
+        const s = `0x` + sig.substring(2).substring(64, 128);
+        const signature = [v, r, s];
+        console.log("signature", signature);
 
         // const url = "/api_discord_connect";
         const url = "http://localhost:53134/api_discord_connect";
@@ -49,6 +70,7 @@
           body: JSON.stringify({
             wallet_addr,
             discord_user_id,
+            signature
           }),
         });
         const resData = await res.json();

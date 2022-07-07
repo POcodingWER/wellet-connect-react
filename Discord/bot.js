@@ -83,7 +83,9 @@ async function add_nft_role(user_id) {  //홀더권한 ㅋ
   const guild = client.guilds.cache.get(GUILD_ID);  //그룹아이디
   const role = guild.roles.cache.get(ROLE_ID_NFT);  //권한
   const member = await guild.members.fetch(user_id);
+  if(user_id===undefined){ return false;}
   member.roles.add(role);
+  return true;
 }
 
 module.exports = {

@@ -45,7 +45,22 @@ app.post("/api_discord_connect", async (req, res) => {
     console.log("api_discord_connect", req.body);
 
     // 디스코드봇이 유저에게 권한을 준다.
-    const { wallet_addr, discord_user_id } = req.body;
+    const { wallet_addr, discord_user_id, signature } = req.body;
+
+    let sign_ret = await caver.validator.validateSignedMessage(
+      "belly gom discord",    //메세지내용
+      signature,              //서명
+      wallet_addr             //지갑주소 
+    );
+    console.log("sign_ret", sign_ret);
+    if (!sign_ret) {
+      return response.json({
+        code: -1,
+        message: `wallet sign fail`,
+      });
+    }
+  
+
     ret = await contract.balanceOf(wallet_addr);
     const count = Number(ret);
 
@@ -57,7 +72,13 @@ app.post("/api_discord_connect", async (req, res) => {
     }
   
     console.log("count", count);
-    add_nft_role(discord_user_id);  //프론트에서받은 아이디
+    
+    if(! await add_nft_role(discord_user_id)){ //프론트에서받은 아이디
+      return res.json({
+        code: 400,
+        message: "등록실패",
+      });
+    } 
 
     return res.json({
       code: 200,
