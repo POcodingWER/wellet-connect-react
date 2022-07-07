@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import OwnableKIP17 from '../../hardhat/artifacts/contracts/SunmiyaNFT.sol/SunmiyaNFT.json'
+import OwnableKIP17 from './abi/OwnableKIP17.json'
 // import Caver from "caver-js";
 // import Web3 from "web3";
 //메타마스크 어디연결인지 확인
@@ -35,7 +35,9 @@ const chainIdToNetworkName = (chainId) => {
   };
 
 function App() {
-  const [ContractAddress, setContractAddress] = useState('0x34a9442AaaE417511D022F04466d34e72976158e')
+  const [ContractAddress, setContractAddress] = useState('')
+  const [netWork, setNetWork] = useState('')
+  const [walletadr, setWalletadr] = useState('')
   const connectEthWellet = async () => {
 
     const metamask =  window.ethereum;
@@ -65,28 +67,32 @@ function App() {
     
     console.log('지갑연결되어있나 연결true, 연결x false:' , klaytn._kaikas.isEnabled());
     const klaytnConnectSuccess = await klaytn.enable(); //또는 window.klaytn.enable()
-    
     if(klaytnConnectSuccess){   //연결되면
-      
       console.log('현제 지갑주소 :', klaytnConnectSuccess);
       console.log('네트워크 넘버 : 1001이면 baobob 8217이면메인넷 :', klaytn.networkVersion);
+      setNetWork(klaytn.networkVersion)
       console.log('선택한 지갑주소:', klaytn.selectedAddress);
+      setWalletadr(klaytn.selectedAddress)
     }
+
+
   }
+
   const deploy = async () =>{
     const contract = new window.caver.klay.Contract(OwnableKIP17.abi);
     const deployer = contract.deploy({
       data: OwnableKIP17.bytecode,
-      // arguments: ['name','symbol'],
-      arguments: [...args],
+      arguments: ['name','symbol'],
     });
+
     const gas = await deployer.estimateGas(); //가스계산 추출
+    console.log(gas)
     const deployed = await deployer.send({  
       from: klaytn.selectedAddress,
       gas: gas,
       value: 0,
     });
-
+    console.log("KIP17 contract adr : deployed.options.address");
     setContractAddress(deployed.options.address)
   };
    
@@ -98,17 +104,19 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <p>지갑 연결</p>
-        <button onClick={connectEthWellet}> metamask지갑연결</button>
+        <p>지갑 연결 </p> {netWork? `네트웤 ${netWork}, 지갑주소 : ${walletadr}`: <button onClick={connectklaytnWellet}> kaikas지갑연결</button>} 
+        {/* <button onClick={connectEthWellet}> metamask지갑연결</button>
+        <br />
+        <br /> */}
+        
         <br />
         <br />
-        <button onClick={connectklaytnWellet}> kaikas지갑연결</button>
+        <button onClick={deploy}> KIP17 deploy</button>
+        {ContractAddress?` KIP17 adr : ${ContractAddress}` :`KIP17 adr : `}
         <br />
         <br />
-        <button onClick={deploy}> deploy</button>{ContractAddress}
-        <br />
-        <br />
-        <button onClick={test}> test </button>{ContractAddress}
+        <button onClick={test}> test </button> 
+        {ContractAddress?` KIP17 adr : ${ContractAddress}` :`KIP17 adr : `}
       </header>
     </div>
   )
