@@ -1,70 +1,44 @@
-import { useState } from 'react'
-import OwnableKIP17 from './abi/OwnableKIP17.json'
-// import Caver from "caver-js";
-// import Web3 from "web3";
-//메타마스크 어디연결인지 확인
-const chainIdToNetworkName = (chainId) => {
-    let network;
-    switch (parseInt(chainId, 16)) {
-      case 1:
-        network = "Mainnet";
-        break;
-      case 3:
-        network = "Ropsten";
-        break;
-      case 4:
-        network = "Rinkeby";
-        break;
-      case 5:
-        network = "Goerli";
-        break;
-      case 6:
-        network = "Kovan";
-        break;
-      case 1337:
-        network = "Localhost";
-        break;
-      case 31337:
-        network = "Hardhat";
-        break;
-      default:
-        network = "Unknown";
-        break;
-    }
-    return network;
-  };
+import React,{useState,useEffect} from "react";
+import { Route, Router, Routes, Link } from "react-router-dom";
+import Index from './component/Index';
+import KIP17 from './component/KIP17';
+import Minter from "./component/Minter";
+import WhiteList from './component/WhiteListdEdit';
+
+const BASE_URI = 'https://qxaz7p4d44.execute-api.ap-northeast-2.amazonaws.com/Prod/';
+const createId = (network, owner) => `${owner}-${network}`;
+async function get(network, owner) {
+  const res = await fetch(`${BASE_URI}${createId(network, owner)}`);
+  try {
+    const info = await res.json();
+    return info;
+  } catch(e) {
+    return null;
+  }
+}
+const getUserData= await get(klaytn.networkVersion, klaytn.selectedAddress)
 
 function App() {
-  const [ContractAddress, setContractAddress] = useState('')
-  const [netWork, setNetWork] = useState('')
-  const [walletadr, setWalletadr] = useState('')
-  const connectEthWellet = async () => {
-
-    const metamask =  window.ethereum;
-    if (metamask) {
-      const accounts = await metamask.request({
-        // method: "eth_accounts",   //주소만불러오는 메소드
-        method: "eth_requestAccounts"    //주소불러와주고 연결안되있으면 연결시켜주는 메소드
-      });
-      const network = await metamask.request({
-        method: "eth_chainId",
-      });
-      const balance = await metamask.request({
-        method: "eth_getBalance",
-        params: [
-          accounts[0],
-          'latest'
-        ],
-      });
-
-      console.log(accounts)
-      console.log('connect network : ', chainIdToNetworkName(network) )
-      console.log( 'balance Of : ', parseInt(balance, 16) )
+  const [netWork, setNetWork] = useState('');
+  const [walletadr, setWalletadr] = useState('');
+  const [KIP17adr,setKIP17adr] = useState('');
+  const [WhiteListadr,setWhiteListadr] = useState('');
+  const [minteadr,setMinteadr] = useState('');
+  
+  useEffect(() => {
+    if( klaytn._kaikas.isEnabled()){
+      setNetWork(klaytn.networkVersion)
+      setWalletadr(klaytn.selectedAddress)
+      if(!getUserData)return;
+      setKIP17adr(getUserData.KIP17)
+      setWhiteListadr(getUserData.Whitelist)
+      setMinteadr(getUserData.Minter)
     }
-  }
+  },[])
+  
+
 
   const connectklaytnWellet = async() =>{
-    
     console.log('지갑연결되어있나 연결true, 연결x false:' , klaytn._kaikas.isEnabled());
     const klaytnConnectSuccess = await klaytn.enable(); //또는 window.klaytn.enable()
     if(klaytnConnectSuccess){   //연결되면
@@ -73,53 +47,23 @@ function App() {
       setNetWork(klaytn.networkVersion)
       console.log('선택한 지갑주소:', klaytn.selectedAddress);
       setWalletadr(klaytn.selectedAddress)
+      location.reload();
     }
-
-
   }
-
-  const deploy = async () =>{
-    const contract = new window.caver.klay.Contract(OwnableKIP17.abi);
-    const deployer = contract.deploy({
-      data: OwnableKIP17.bytecode,
-      arguments: ['name','symbol'],
-    });
-
-    const gas = await deployer.estimateGas(); //가스계산 추출
-    console.log(gas)
-    const deployed = await deployer.send({  
-      from: klaytn.selectedAddress,
-      gas: gas,
-      value: 0,
-    });
-    console.log("KIP17 contract adr : deployed.options.address");
-    setContractAddress(deployed.options.address)
-  };
-   
-  const test = async () =>{
-    // const caver = new Web3(window.caver.klay)
-   console.log('caver')
-
-  }
+ 
   return (
-    <div className="App">
-      <header className="App-header">
-        <p>지갑 연결 </p> {netWork? `네트웤 ${netWork}, 지갑주소 : ${walletadr}`: <button onClick={connectklaytnWellet}> kaikas지갑연결</button>} 
-        {/* <button onClick={connectEthWellet}> metamask지갑연결</button>
-        <br />
-        <br /> */}
-        
-        <br />
-        <br />
-        <button onClick={deploy}> KIP17 deploy</button>
-        {ContractAddress?` KIP17 adr : ${ContractAddress}` :`KIP17 adr : `}
-        <br />
-        <br />
-        <button onClick={test}> test </button> 
-        {ContractAddress?` KIP17 adr : ${ContractAddress}` :`KIP17 adr : `}
-      </header>
+    <div style={{marginTop:'40px'}}>
+       <b>지갑 연결</b> {netWork? `네트웤 ${netWork}, 지갑주소 : ${walletadr}`: <button onClick={connectklaytnWellet}> kaikas지갑연결</button>} 
+        <br/>
+        <br/>
+         <Routes>
+          <Route path="/" element={<Index KIP17adr={KIP17adr} WhiteListadr={WhiteListadr} setWhiteListadr={setWhiteListadr} minteadr={minteadr} />} />
+          <Route path="/KIP17" element={<KIP17/>} />
+          <Route path="/WhiteList" element={<WhiteList />} />
+          <Route path="/Minter" element={<Minter KIP17adr={KIP17adr} WhiteListadr={WhiteListadr} />} />
+        </Routes>
     </div>
-  )
+  );
 }
 
 export default App
