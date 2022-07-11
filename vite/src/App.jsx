@@ -3,6 +3,8 @@ import { Route, Router, Routes, Link } from "react-router-dom";
 import Index from './component/Index';
 import KIP17 from './component/KIP17';
 import Minter from "./component/Minter";
+import MinterInfo from "./component/MinterInfo";
+import ViewAdr from "./component/ViewAdr";
 import WhiteList from './component/WhiteListdEdit';
 
 const BASE_URI = 'https://qxaz7p4d44.execute-api.ap-northeast-2.amazonaws.com/Prod/';
@@ -23,7 +25,7 @@ function App() {
   const [walletadr, setWalletadr] = useState('');
   const [KIP17adr,setKIP17adr] = useState('');
   const [WhiteListadr,setWhiteListadr] = useState('');
-  const [minteadr,setMinteadr] = useState('');
+  const [mintadr,setMintadr] = useState('');
   
   useEffect(() => {
     if( klaytn._kaikas.isEnabled()){
@@ -32,7 +34,7 @@ function App() {
       if(!getUserData)return;
       setKIP17adr(getUserData.KIP17)
       setWhiteListadr(getUserData.Whitelist)
-      setMinteadr(getUserData.Minter)
+      setMintadr(getUserData.Minter)
     }
   },[])
   
@@ -53,15 +55,23 @@ function App() {
  
   return (
     <div style={{marginTop:'40px'}}>
-       <b>지갑 연결</b> {netWork? `네트웤 ${netWork}, 지갑주소 : ${walletadr}`: <button onClick={connectklaytnWellet}> kaikas지갑연결</button>} 
+       <b>지갑 연결</b> {walletadr? `네트웤 ${netWork}, 지갑주소 : ${walletadr}`: <button onClick={connectklaytnWellet}> kaikas지갑연결</button>} 
         <br/>
         <br/>
          <Routes>
-          <Route path="/" element={<Index KIP17adr={KIP17adr} WhiteListadr={WhiteListadr} setWhiteListadr={setWhiteListadr} minteadr={minteadr} />} />
+          <Route path="/" element={<Index KIP17adr={KIP17adr} WhiteListadr={WhiteListadr} setWhiteListadr={setWhiteListadr} minteadr={mintadr} />} />
           <Route path="/KIP17" element={<KIP17/>} />
           <Route path="/WhiteList" element={<WhiteList />} />
           <Route path="/Minter" element={<Minter KIP17adr={KIP17adr} WhiteListadr={WhiteListadr} />} />
         </Routes>
+        { mintadr
+          ?
+          <div>
+            <ViewAdr mintadr={mintadr} />
+            <MinterInfo  mintadr={mintadr}/>
+          </div> 
+          :" "
+        }
     </div>
   );
 }
