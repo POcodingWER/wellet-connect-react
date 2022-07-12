@@ -68,7 +68,7 @@ export default function Index({KIP17adr,WhiteListadr,setWhiteListadr,minteadr}) 
           ? 
           <div>
             <button disabled> WhiteList Deploy</button> {WhiteListadr}&nbsp;&nbsp;
-            <Link to="/WhiteListAdd"><button > KIP17deploy</button></Link>
+            <Link to="/WhiteListAdd"><button > whiteList edit</button></Link>
           </div> 
           :  
           <div>

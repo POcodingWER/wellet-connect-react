@@ -62,7 +62,7 @@ function App() {
           <Route path="/" element={<Index KIP17adr={KIP17adr} WhiteListadr={WhiteListadr} setWhiteListadr={setWhiteListadr} minteadr={mintadr} />} />
           <Route path="/KIP17" element={<KIP17/>} />
           <Route path="/Minter" element={<Minter KIP17adr={KIP17adr} WhiteListadr={WhiteListadr} />} />
-          <Route path="/WhiteListAdd" element={<WhiteList />} />
+          <Route path="/WhiteListAdd" element={<WhiteList WhiteListadr={WhiteListadr}/>} />
           {/* <Route path="/222" element={<Hhii />} /> */}
         </Routes>
     </div>
