@@ -9,13 +9,12 @@ export default function ViewAdr({mintadr}) {
     const [currentBlockTime, setCurrentBlockTime] = useState(0);
     const [totalSaleAmount, setTotalSaleAmount] = useState(0);
     const [totalSupply, setTotalSupply] = useState(0);
+    const [scopeURI, setScopeURI] = useState('https://scope.klaytn.com/');
     const blockNumberRef = useRef(0);
     const minterContract = new window.caver.klay.Contract(OwnableKIP17.abi,mintadr);
-    let scopeURI = 'https://scope.klaytn.com/';
 
     useEffect(() => {
-        if(klaytn.networkVersion === 1001) scopeURI ='https://baobab.scope.klaytn.com/';
-        
+        if(klaytn.networkVersion === 1001) setScopeURI('https://baobab.scope.klaytn.com/');
         const addressInfo = async ()=>{
             const adrlog =  await minterContract.methods
                 .getAddress()

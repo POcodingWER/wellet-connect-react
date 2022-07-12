@@ -5,7 +5,7 @@ import _ from 'lodash';
 // import Web3 from "web3";
 //메타마스크 어디연결인지 확인
 
-function App() {
+function Hhii() {
   const [ContractAddress, setContractAddress] = useState('0x80BE2Fd762cE9DBC36d87e6ead5b1C3f5F0B5c44')
   const [netWork, setNetWork] = useState('')
   const [walletadr, setWalletadr] = useState('')
@@ -58,31 +58,36 @@ function App() {
     // console.log('name :',callname,'symbol',callSymbol)
 
     /*Send 1방식 */
+    const mintgas =await contract.methods   //가스비 계산해서
+    .mintWithTokenURI(klaytn.selectedAddress,10,'coca')
+    .estimateGas({from: klaytn.selectedAddress});
+    console.log(mintgas);
+
     // const mint1 = await contract.methods
     //   .mintWithTokenURI(klaytn.selectedAddress,10,'coca')
     //   .send({
     //     from:klaytn.selectedAddress,
     //     gas:mintgas
     //   })
-    // console.log(mint1);
+
     /*Send encodeFunctionCall 사용방식 */
-    const mintgas =await contract.methods   //가스비 계산해서
-    .mintWithTokenURI(klaytn.selectedAddress,10,'coca')
-    .estimateGas({from: klaytn.selectedAddress});
+    // const mintgas =await contract.methods   //가스비 계산해서
+    // .mintWithTokenURI(klaytn.selectedAddress,10,'coca')
+    // .estimateGas({from: klaytn.selectedAddress});
 
-    const name =  contract.options.jsonInterface[27] //method이름다보임
-    console.log(name);
+    // const name =  contract.options.jsonInterface[27] //method이름다보임
+    // console.log(name);
 
-    const abiEncod = window.caver.klay.abi.encodeFunctionCall(name,[klaytn.selectedAddress,10,'coca']) //데이터코드화
-    console.log(abiEncod);
+    // const abiEncod = window.caver.klay.abi.encodeFunctionCall(name,[klaytn.selectedAddress,10,'coca']) //데이터코드화
+    // console.log(abiEncod);
     
-    const mint2 = await window.caver.klay.sendTransaction({
-      type:"SMART_CONTRACT_EXECUTION",
-      from:klaytn.selectedAddress,
-      to:ContractAddress,
-      gas:mintgas,
-      data:abiEncod
-    })
+    // const mint2 = await window.caver.klay.sendTransaction({
+    //   type:"SMART_CONTRACT_EXECUTION",
+    //   from:klaytn.selectedAddress,
+    //   to:ContractAddress,
+    //   gas:mintgas,
+    //   data:abiEncod
+    // })
     console.log(mint2)
   };
 
@@ -135,4 +140,4 @@ function App() {
   )
 }
 
-export default App
+export default Hhii

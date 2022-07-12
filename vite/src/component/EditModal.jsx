@@ -3,7 +3,7 @@ import './Modal.css'
 import dayjs from 'dayjs';
 import OwnableKIP17 from '../abi/MinterKIP17.json'
 
-export default function Modal({setModal,lastSaleId,mintadr}) {
+export default function EditModal({setModal,mintadr,modalInfo}) {
   const [startBlockNumber, setStartBlockNumber] = useState(0); 
   const [currentBlockTime, setCurrentBlockTime] = useState(0);
   const [lastSaleTokenId, setLastSaleTokenId] = useState(0);
@@ -12,15 +12,13 @@ export default function Modal({setModal,lastSaleId,mintadr}) {
   const [saleKlayAmount, setSaleKlayAmount] = useState(0);
 
   useEffect(() => {
-    const init = async ()=>{
-      const nowBlock =  await window.caver.klay.getBlockNumber()
-      setStartBlockNumber(nowBlock)
-      const block = await window.caver.klay.getBlock(nowBlock);
-      const blockTimestamp = parseInt(block.timestamp);
-      const dateFormatter =  dayjs(Number(blockTimestamp) * 1000).format('YYYY-MM-DD HH:mm:ss');
-      setCurrentBlockTime(dateFormatter)
-    }
-    init();
+      setStartBlockNumber(modalInfo.startBlockNumber);
+      setCurrentBlockTime(modalInfo.time);
+      setLastSaleTokenId(modalInfo.lastSaleTokenId);
+      setBuyAmountPerWallet(modalInfo.buyAmountPerWallet);
+      setBuyAmountPerTrx(modalInfo.buyAmountPerTrx);
+      setSaleKlayAmount(modalInfo.klayc);
+ 
   }, []);
 
   const blockNumberToTimestamp = async (blockNumber) => {
@@ -65,7 +63,7 @@ export default function Modal({setModal,lastSaleId,mintadr}) {
     const peb =await window.caver.utils.toPeb(saleKlayAmount, 'KLAY');  //klay ->peb
 
     const info =[
-      Number(lastSaleId)+1,
+      Number(modalInfo.saleId),
       Number(startBlockNumber),
       Number(lastSaleTokenId),
       Number(buyAmountPerWallet),
@@ -91,6 +89,8 @@ export default function Modal({setModal,lastSaleId,mintadr}) {
     .setSaleInfo(...info )
     .estimateGas({from:klaytn.selectedAddress});
 
+
+
     const setSaleInfo = await contract.methods
       .setSaleInfo(...info )
       .send({
@@ -98,12 +98,12 @@ export default function Modal({setModal,lastSaleId,mintadr}) {
         gas 
       })
 
-      if (setSaleInfo.status) {
-        alert('저장되었습니다.');
-        window.location.reload();
-      } else {
-        alert('실패하였습니다.');
-      }
+    if (setSaleInfo.status) {
+      alert('저장되었습니다.');
+      window.location.reload();
+    } else {
+      alert('실패하였습니다.');
+    }
   }
 
   return (

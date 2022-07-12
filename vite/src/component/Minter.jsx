@@ -80,7 +80,7 @@ export default function Minter( {KIP17adr,WhiteListadr}) {
         WhiteLList Address : <input disabled style={{width:'500px'}}  value={WhiteListadr} />
       </p>
       <p>
-        META Data URL : <input style={{width:'500px'}} placeholder="보통6자 대문자" value={URL} onChange={URLChange}/>
+        META Data URL : <input style={{width:'500px'}} placeholder="metadata URL" value={URL} onChange={URLChange}/>
       </p>
       <button onClick={MinterDeploy}>Deploy</button>
     </div>

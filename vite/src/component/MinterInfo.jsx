@@ -1,6 +1,7 @@
 import React,{useEffect,useState,useMemo} from 'react'
 import OwnableKIP17 from '../abi/MinterKIP17.json'
 import Modal from './Modal'
+import EditModal from './EditModal'
 
 /*
     const zzz =await window.caver.utils.toPeb('1', 'KLAY');  //klay ->peb
@@ -10,8 +11,10 @@ export default function MinterInfo({mintadr}) {
     const [minterInfo, setMinterInfo] = useState({})
     const [slaeInfo, setslaeInfo] = useState([])
     const [modal,setModal]= useState(false)
+    const [editModal,setEditModal]= useState(false)
+    const [modalInfo,setModalInfo]= useState({})
     const minterContract = new window.caver.klay.Contract(OwnableKIP17.abi,mintadr);
-    let array =[]
+    let array =[];
     
     useMemo(() => {
         const addressInfo = async ()=>{
@@ -27,13 +30,14 @@ export default function MinterInfo({mintadr}) {
                 const getSlaeInfo = await minterContract.methods
                 .getSaleInfo(i)
                 .call({ from: klaytn.selectedAddress});
-                const dateFormatter = new Date( getSlaeInfo.startBlockNumber * 1000);
-                const time=dateFormatter.toISOString().replace(/T/, ' ').replace(/\..+/, '');
 
+                const block = await window.caver.klay.getBlock(getSlaeInfo.startBlockNumber);
+                const dateFormatter = new Date(block.timestamp * 1000);
+                const time = dateFormatter.toISOString().replace(/T/, ' ').replace(/\..+/, '');
                
                 array.push({...getSlaeInfo,saleId:i,time:time})
             } 
-            setslaeInfo(array);
+            setslaeInfo(array); 
         }
         addressInfo();       
     }, [])
@@ -109,7 +113,6 @@ export default function MinterInfo({mintadr}) {
     }
 
     const modalOn = ()=>{
-        console.log(modal)
         setModal(true)
     }
 
@@ -143,6 +146,7 @@ return (
                         <th>시간</th>
                         <th>NFT 판매 제한 수량	</th>
                         <th>지갑 당 최대 구매 수량</th>
+                        <th>트랜잭션당 구매수량	</th>
                         <th>Klay 판매 가격(klay)</th>
                         <th>수정</th>
                     </tr>
@@ -163,10 +167,14 @@ return (
                                 <td>{info.saleId}</td>
                                 <td>{info.startBlockNumber}</td>
                                 <td>{info.time}</td>
+                                <td>{info.lastSaleTokenId}</td>
                                 <td>{info.buyAmountPerWallet}</td>
                                 <td>{info.buyAmountPerTrx}</td>
                                 <td>{klayc}</td>
-                                <td> <button onClick={()=>{}}>Edit</button></td>
+                                <td> <button onClick={()=>{
+                                    setModalInfo({...info,klayc})
+                                    setEditModal(true);
+                                }}>Edit</button></td>
                             </tr>
                         );
                     })
@@ -175,7 +183,8 @@ return (
         <br/>
         <br/>
         <button onClick={modalOn}> 판매 옵션 추가~</button>
-        {modal?<Modal setModal={setModal}/>:''}
+        {modal?<Modal setModal={setModal} lastSaleId={minterInfo._lastSaleId} mintadr={mintadr}/>:''}
+        {editModal?<EditModal setModal={setEditModal} mintadr={mintadr} modalInfo={modalInfo}/>:''}
         
     </div>
   )

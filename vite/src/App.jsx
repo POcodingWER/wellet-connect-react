@@ -3,9 +3,9 @@ import { Route, Router, Routes, Link } from "react-router-dom";
 import Index from './component/Index';
 import KIP17 from './component/KIP17';
 import Minter from "./component/Minter";
-import MinterInfo from "./component/MinterInfo";
-import ViewAdr from "./component/ViewAdr";
-import WhiteList from './component/WhiteListdEdit';
+
+import WhiteList from './component/WhiteListdAdd';
+import Hhii from './Hhii';
 
 const BASE_URI = 'https://qxaz7p4d44.execute-api.ap-northeast-2.amazonaws.com/Prod/';
 const createId = (network, owner) => `${owner}-${network}`;
@@ -61,17 +61,10 @@ function App() {
          <Routes>
           <Route path="/" element={<Index KIP17adr={KIP17adr} WhiteListadr={WhiteListadr} setWhiteListadr={setWhiteListadr} minteadr={mintadr} />} />
           <Route path="/KIP17" element={<KIP17/>} />
-          <Route path="/WhiteList" element={<WhiteList />} />
           <Route path="/Minter" element={<Minter KIP17adr={KIP17adr} WhiteListadr={WhiteListadr} />} />
+          <Route path="/WhiteListAdd" element={<WhiteList />} />
+          {/* <Route path="/222" element={<Hhii />} /> */}
         </Routes>
-        { mintadr
-          ?
-          <div>
-            <ViewAdr mintadr={mintadr} />
-            <MinterInfo  mintadr={mintadr}/>
-          </div> 
-          :" "
-        }
     </div>
   );
 }

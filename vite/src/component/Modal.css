@@ -10,15 +10,11 @@
     background-color: rgba(0, 0, 0, 0.4);
 } 
 .modal{
-
     border-radius: 10px;
-    margin-top:15%;
+    margin-top:10%;
     margin-left:20%;
+    padding: 10px;
     height: 70vh;
     width: 70vh;
-    
-    
-  
-  
     background-color: rgb(255, 255, 255);
 } 

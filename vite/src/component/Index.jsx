@@ -1,7 +1,8 @@
 import React,{useState} from "react";
 import { Link } from "react-router-dom";
 import Whitelist from'../abi/Whitelist.json'
-
+import MinterInfo from "../component/MinterInfo";
+import ViewAdr from "../component/ViewAdr";
 const BASE_URI = 'https://qxaz7p4d44.execute-api.ap-northeast-2.amazonaws.com/Prod/';
 const createId = (network, owner) => `${owner}-${network}`;
 
@@ -66,10 +67,13 @@ export default function Index({KIP17adr,WhiteListadr,setWhiteListadr,minteadr}) 
         {WhiteListadr
           ? 
           <div>
-            <button disabled> WhiteList Deploy</button> {WhiteListadr}
+            <button disabled> WhiteList Deploy</button> {WhiteListadr}&nbsp;&nbsp;
+            <Link to="/WhiteListAdd"><button > KIP17deploy</button></Link>
           </div> 
           :  
-           <button onClick={WLdeploy}> WhiteList Deploy</button>
+          <div>
+            <button onClick={WLdeploy}> WhiteList Deploy </button>
+          </div>
         }
       </p>
       <p>
@@ -82,7 +86,14 @@ export default function Index({KIP17adr,WhiteListadr,setWhiteListadr,minteadr}) 
           <Link to="/Minter"> <button > Minter Deploy</button></Link>
         }
       </p>
-      
+       { minteadr
+          ?
+          <div>
+            <ViewAdr mintadr={minteadr} />
+            <MinterInfo  mintadr={minteadr}/>
+          </div> 
+          :" "
+        }
     </div>
   );
 }
