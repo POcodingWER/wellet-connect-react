@@ -2,7 +2,7 @@ import React,{useEffect,useState,useMemo} from 'react'
 import OwnableKIP17 from '../abi/MinterKIP17.json'
 import Modal from './Modal'
 import EditModal from './EditModal'
-
+import dayjs from 'dayjs';
 /*
     const zzz =await window.caver.utils.toPeb('1', 'KLAY');  //klay ->peb
     const zzz = window.caver.utils.fromPeb(getSlaeInfo.saleKlayAmount, 'KLAY');   //peb->klay
@@ -16,6 +16,41 @@ export default function MinterInfo({mintadr}) {
     const minterContract = new window.caver.klay.Contract(OwnableKIP17.abi,mintadr);
     let array =[];
     
+    const blockNumberToTimestamp = async (blockNumber) => {
+        let block;
+        try {
+            block = await window.caver.klay.getBlock(blockNumber);
+            return parseInt(block.timestamp);
+        } catch (e) {
+          const currentBlockNumber = parseInt(
+            await window.caver.klay.getBlockNumber()
+          );
+          const currentBlockTimestamp = await blockNumberToTimestamp(
+            currentBlockNumber
+          );
+          return (
+            currentBlockTimestamp +
+            parseInt(blockNumber) -
+            parseInt(currentBlockNumber)
+          );
+        }
+      };
+    const convertDateToBlockNumber = async (date) => {
+        const timestamp = dayjs(date, 'YYYY-MM-DD HH:mm:ss').unix();
+        const currentTimestamp = parseInt(Date.now() / 1000);  
+        if (currentTimestamp >= timestamp) {
+          return await getBlockNumberByTimestamp(timestamp);
+        } else {
+          return await getBlockNumberByFutureTimestamp(timestamp);
+        }
+      };
+
+    const convertBlockNumberToDate = async (blockNumber) => {
+        const timestamp = await blockNumberToTimestamp(blockNumber);
+
+        return dayjs(Number(timestamp) * 1000).format('YYYY-MM-DD HH:mm:ss');
+      };
+
     useMemo(() => {
         const addressInfo = async ()=>{
             
@@ -25,17 +60,11 @@ export default function MinterInfo({mintadr}) {
 
                 setMinterInfo(getminterInfo);
             
-            
             for (let i = 1; i <= getminterInfo._lastSaleId; i++) {
                 const getSlaeInfo = await minterContract.methods
                 .getSaleInfo(i)
                 .call({ from: klaytn.selectedAddress});
-
-                const block = await window.caver.klay.getBlock(getSlaeInfo.startBlockNumber);
-                const dateFormatter = new Date(block.timestamp * 1000);
-                const time = dateFormatter.toISOString().replace(/T/, ' ').replace(/\..+/, '');
-               
-                array.push({...getSlaeInfo,saleId:i,time:time})
+                array.push({...getSlaeInfo,saleId:i,time:await convertBlockNumberToDate(getSlaeInfo.startBlockNumber)})
             } 
             setslaeInfo(array); 
         }
