@@ -327,18 +327,18 @@ export default function WhiteListdAdd({WhiteListadr}) {
                 </tr>
                 {registNFT[1]? 
                 <>
-                  {registNFT[0].map((a)=>{
+                  {registNFT[0].map((a,i)=>{
                     return(
-                    <tr>
+                    <tr key={i}>
                         <td>{a.saleId}</td>
                         <td>{a.nftAddress}</td>
                         <td>{a.nftName}</td>
                         <td>{a.nftMinimumBalance}</td>
                     </tr>
                     )})}
-                  {registNFT[1].map((a)=>{
+                  {registNFT[1].map((a,i)=>{
                     return(
-                    <tr>
+                    <tr key={i}>
                         <td>{a.saleId}</td>
                         <td>{a.nftAddress}</td>
                         <td>{a.nftName}</td>

@@ -97,10 +97,11 @@ function App() {
     // console.log(sale);
 
     // 방법2 kas로 데이터 endcoding 하고 caver로 전송
-    const contract = new caverExtKAS.klay.Contract(MinterKIP17.abi,'0x1d5476A2FaA7b304b06e06Eeafe2b4d2b80ac8DC');
+    const contract = new caverExtKAS.klay.Contract(MinterKIP17.abi,'0xad078452065D6Cc3b94B53CCee1066368D6612f6');
     console.log(contract._address); //kas 연결확인
 
-    const isOpen = await contract.methods.getSaleInfo(1).call();
+    // const isOpen = await contract.methods.getSaleInfo(1).call();
+    const isOpen = await contract.methods.isOpen().call();
     console.log(isOpen); //kas 연결확인
 
     const gas =await contract.methods   //가스비 계산해서

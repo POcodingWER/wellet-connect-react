@@ -182,7 +182,7 @@ return (
                     {slaeInfo ? slaeInfo.map((info,i)=>{
                          const klayc = window.caver.utils.fromPeb(info.saleKlayAmount, 'KLAY');
                         return(
-                            <tr>
+                            <tr key={i}>
                                 <td>
                                 {Number(minterInfo._currentSaleId) === Number(info.saleId) && minterInfo._isOpen
                                 ?<div>
