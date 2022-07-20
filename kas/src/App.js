@@ -15,6 +15,22 @@ const caver = new Caver(window.klaytn);
 
 function App() {
 
+  window.klaytn.on('accountsChanged',function(accounts){    //change 함수
+    console.log(accounts)
+    getlog()
+  })
+
+  const connectklaytnWellet = async() =>{
+    console.log('지갑연결되어있나 연결true, 연결x false:' , window.klaytn._kaikas.isEnabled());
+    const klaytnConnectSuccess = await window.klaytn.enable(); 
+    if(klaytnConnectSuccess){   //연결되면
+      console.log('현제 지갑주소 :', klaytnConnectSuccess);
+      console.log('네트워크 넘버 : 1001이면 baobob 8217이면메인넷 :', window.klaytn.networkVersion);
+      console.log('선택한 지갑주소:', window.klaytn.selectedAddress);
+    }
+  }
+  connectklaytnWellet()
+  
   const click = async() =>{
     console.log(caverExtKAS); //kas 연결확인
     console.log('현재블록번호 : ' , await caverExtKAS.klay.getBlockNumber()); //kas 연결확인
@@ -130,11 +146,20 @@ function App() {
       console.log(mint2)
 
   }
+  
+  const getlog = async ()=>{
+    const contract = new caverExtKAS.klay.Contract(KIP17.abi,'0x5544775e57aa4C4D83c606971C03Da06324CC451');
+    //returnValues 안에있는 값을 필터로 찾으면 됩니당.
+    const getBlockEvent = await contract.getPastEvents('Transfer',{ filter:{to:[window.klaytn.selectedAddress]}, fromBlock: 96534898, toBlock:'latest'})
+    console.log(getBlockEvent); 
+  }
+
+
   return (
     <div className="App">
       <header className="App-header">
         <img src={logo}  className="App-logo" alt="logo" />
-        <button style={{width:'100px',height:'100px'}} onClick={mintcheck}> click me</button>
+        <button style={{width:'100px',height:'100px'}} onClick={getlog}> click me</button>
       </header>
     </div>
   );
