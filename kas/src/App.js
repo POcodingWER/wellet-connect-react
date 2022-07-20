@@ -25,7 +25,7 @@ function App() {
     const klaytnConnectSuccess = await window.klaytn.enable(); 
     if(klaytnConnectSuccess){   //연결되면
       console.log('현제 지갑주소 :', klaytnConnectSuccess);
-      console.log('네트워크 넘버 : 1001이면 baobob 8217이면메인넷 :', window.klaytn.networkVersion);
+      console.log('네트워크 넘버 :',window.klaytn.networkVersion, window.klaytn.networkVersion===1001?'Testnet':'MainNet' );
       console.log('선택한 지갑주소:', window.klaytn.selectedAddress);
     }
   }
@@ -148,10 +148,13 @@ function App() {
   }
   
   const getlog = async ()=>{
+    let box =[]
     const contract = new caverExtKAS.klay.Contract(KIP17.abi,'0x5544775e57aa4C4D83c606971C03Da06324CC451');
     //returnValues 안에있는 값을 필터로 찾으면 됩니당.
-    const getBlockEvent = await contract.getPastEvents('Transfer',{ filter:{to:[window.klaytn.selectedAddress]}, fromBlock: 96534898, toBlock:'latest'})
-    console.log(getBlockEvent); 
+    console.log(await contract.methods.balanceOf('0x14e1919649812e351101c20cf07476645e71e7d8').call());
+    const getBlockEvent = await contract.getPastEvents('Transfer',{ filter:{to:['0x14e1919649812e351101c20cf07476645e71e7d8']}, fromBlock: 96534898, toBlock:'latest'})
+    await getBlockEvent.map((v)=>{box.push(v.returnValues.tokenId)})    //map으로 찾아서
+    console.log(box); 
   }
 
 
