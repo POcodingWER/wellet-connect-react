@@ -2,7 +2,7 @@ import React,{useState,useEffect,useRef} from 'react'
 import MinterKIP17 from'../abi/MinterKIP17.json'
 
 export default function GetSaleInfo({caverExtKAS}) {
-const MinterAddress = '0x73E04De07e0D2169408fefFeB0B76f36aC578036'      //env로빼야될듯?
+const MinterAddress = '0x7c6C70AB930E5637f5F862629A67D47C3403cC34'      //env로빼야될듯?
 const [blockNumber, setBlockNumber] = useState();   //블록 대략 1초마다생성 10초에 한번씩 sync 조절
 const blockNumberRef = useRef(0);
 
@@ -71,6 +71,7 @@ const getInfo =async ()=>{
 const getNftCounter =async ()=>{
     const contract = new caverExtKAS.klay.Contract(MinterKIP17.abi,MinterAddress); 
     const data = await contract.methods.tokenIdCounter().call();
+    console.log(data);
     setNftNum(data);
 }
 

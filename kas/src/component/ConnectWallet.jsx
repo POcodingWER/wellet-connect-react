@@ -2,7 +2,7 @@ import React,{useState,useEffect} from 'react'
 import MinterKIP17 from'../abi/MinterKIP17.json'
 
 export default function ConnectWallet({caver,caverExtKAS}) {
-const MinterAddress = '0x73E04De07e0D2169408fefFeB0B76f36aC578036'      //env로빼야될듯?
+const MinterAddress = '0x7c6C70AB930E5637f5F862629A67D47C3403cC34'      //env로빼야될듯?
 const amount = 1;   //구매수량 
 
 const [saleInfo, setSaleInfo] = useState({
@@ -26,6 +26,7 @@ useEffect(() => {
       const isOpen = await contract.methods.isOpen().call();
       const currentSaleType = await contract.methods.currentSaleType().call();
       console.log(currentSaleType);
+      
       let data = await contract.methods.getSaleInfo(saleId).call()
       data = {
           ...data,
@@ -67,34 +68,43 @@ const unConnectklaytnWellet = async() =>{   //눈속임 진짜로 지갑 끊을�
 }
 
 const mint = async ()=>{
-  console.log(saleInfo);
   const contract = new caverExtKAS.klay.Contract(MinterKIP17.abi,MinterAddress);
-  // if(saleInfo.currentSaleType === 0){ //WL
-  //   const value = caverExtKAS.utils.toPeb(saleInfo.saleKlayAmount,'KLAY')*amount;  //peb단위로 변환후 *amount
-    
-  // }else if(saleInfo.currentSaleType ===1 ){ //public
-  //   const value = caverExtKAS.utils.toPeb(saleInfo.saleKlayAmount,'KLAY')*amount;  //peb단위로 변환후 *amount
-  //   console.log(window.klaytn.selectedAddress)
+  const sendContract = new caver.klay.Contract(MinterKIP17.abi,MinterAddress);
 
-    
-  // }
-   const gas =await contract.methods   //가스비 계산해서
-    .publicSale(1,1)
-    .estimateGas({from: window.klaytn.selectedAddress,
-      value:"1000000000000000000",});
-    console.log(gas);
-    
-    console.log(gas)
+  if(saleInfo.currentSaleType === 0){ //WL
+    const value = caverExtKAS.utils.toPeb(saleInfo.saleKlayAmount,'KLAY')*amount;  //peb단위로 변환후 *amount
+    const gas =await contract.methods
+    .whitelistSale(saleInfo.saleId,amount)     //가스비 계산해서
+    .estimateGas({
+      from: window.klaytn.selectedAddress,
+      value});
+    const send = await sendContract.methods //민팅보냄
+    .whitelistSale(saleInfo.saleId,amount)
+    .send({
+      from: window.klaytn.selectedAddress,
+      value,
+      gas});
+    console.log(send);
+  }else if(saleInfo.currentSaleType === 1 ){ //public
+    const value = caverExtKAS.utils.toPeb(saleInfo.saleKlayAmount,'KLAY')*amount;  //peb단위로 변환후 *amount
+    const gas =await contract.methods   //가스비 계산해서
+      .publicSale(saleInfo.saleId,amount)
+      .estimateGas({
+        from: window.klaytn.selectedAddress,
+        value,});
 
-  
-
-
-
+    const send = await sendContract.methods //민팅보냄
+      .publicSale(saleInfo.saleId,amount)
+      .send({
+        from: window.klaytn.selectedAddress,
+        value,
+        gas});
+    console.log(send);
+  }
 }
 
   return (
     <div>ConnectWallet  <br/>Saleinfo :{saleInfo.currentSaleType===0?'Whitelist':'Public'}
-      
        {btnName
        ?
        <div>
