@@ -17,7 +17,7 @@ const { add_nft_role } = require("./bot");      //bot  기능 구현 실행해�
 /*test */
 const rpcURL = "https://public-node-api.klaytnapi.com/v1/baobab"
 const caver = new Caver(rpcURL);
-const CONTRACT_ADDR = "0x4be460eecfb36fcc1379964ca9f330662f71578f";
+const CONTRACT_ADDR = "0x8c15556eC7BeE835073211C4662989676862243c";
 let contract = null;
 
 async function initContract() { //컨트렉트 설정
