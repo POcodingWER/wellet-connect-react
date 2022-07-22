@@ -1,4 +1,4 @@
-import React,{useState,useEffect} from 'react'
+import React,{useState,useEffect,useCallback} from 'react'
 import MinterKIP17 from'../abi/MinterKIP17.json'
 
 export default function ConnectWallet({caver,caverExtKAS}) {
@@ -48,7 +48,26 @@ window.klaytn.on('accountsChanged',function(accounts){    //wallet address chang
   console.log(accounts)
 })
 
+const activate = async () => {  //지갑연결시 klaytn 설치여부  
+  if (!window.klaytn) {
+    if (navigator.userAgent.indexOf('Mobi') > -1) {
+      alert(
+        "민팅은 PC 웹에서만 사용 가능합니다."
+      );
+      return;
+    }
+    alert(
+      "카이카스를 설치해 주세요. 카이카스는 PC 웹에서만 사용 가능합니다."
+    );
+    window.open(
+      "https://chrome.google.com/webstore/detail/kaikas/jblndlipeogpafnldhgmapagcccfchpi"
+    );
+    return;
+  }
+};
+
 const connectklaytnWellet = async() =>{
+  activate();
   const klaytnConnectSuccess = await window.klaytn.enable(); //지갑연결
   if(klaytnConnectSuccess){   //연결되면
     setBtnName(true)
@@ -70,36 +89,74 @@ const unConnectklaytnWellet = async() =>{   //눈속임 진짜로 지갑 끊을�
 const mint = async ()=>{
   const contract = new caverExtKAS.klay.Contract(MinterKIP17.abi,MinterAddress);
   const sendContract = new caver.klay.Contract(MinterKIP17.abi,MinterAddress);
+  const value = caverExtKAS.utils.toPeb(saleInfo.saleKlayAmount,'KLAY')*amount;  //peb단위로 변환후 *amount
 
   if(saleInfo.currentSaleType === 0){ //WL
-    const value = caverExtKAS.utils.toPeb(saleInfo.saleKlayAmount,'KLAY')*amount;  //peb단위로 변환후 *amount
-    const gas =await contract.methods
-    .whitelistSale(saleInfo.saleId,amount)     //가스비 계산해서
-    .estimateGas({
-      from: window.klaytn.selectedAddress,
-      value});
-    const send = await sendContract.methods //민팅보냄
-    .whitelistSale(saleInfo.saleId,amount)
-    .send({
-      from: window.klaytn.selectedAddress,
-      value,
-      gas});
-    console.log(send);
-  }else if(saleInfo.currentSaleType === 1 ){ //public
-    const value = caverExtKAS.utils.toPeb(saleInfo.saleKlayAmount,'KLAY')*amount;  //peb단위로 변환후 *amount
-    const gas =await contract.methods   //가스비 계산해서
-      .publicSale(saleInfo.saleId,amount)
+    try {
+      const gas =await contract.methods
+      .whitelistSale(saleInfo.saleId,amount)     //가스비 계산해서
       .estimateGas({
         from: window.klaytn.selectedAddress,
-        value,});
-
-    const send = await sendContract.methods //민팅보냄
-      .publicSale(saleInfo.saleId,amount)
+        value});
+      const send = await sendContract.methods //민팅보냄
+      .whitelistSale(saleInfo.saleId,amount)
       .send({
         from: window.klaytn.selectedAddress,
         value,
         gas});
-    console.log(send);
+      if (send) {
+        alert(
+          `${amount}장 민팅에 성공하였습니다.`
+        );
+      }
+    }  catch (error) {const message = error?.message;
+      console.log(message);
+      if (message?.includes("User denied transaction")) {
+        return alert(
+          "요청을 취소하였습니다."
+        );
+      }
+      if (message?.includes('Invalid "from" address')) {
+        return alert(
+          "현재 연결한 지갑 정보를 확인해 주세요."
+        );
+      }
+      alert("민팅에 실패하였습니다.");
+    };
+  }else if(saleInfo.currentSaleType === 1 ){ //public
+     try {
+      const gas =await contract.methods   //가스비 계산해서
+        .publicSale(saleInfo.saleId,amount)
+        .estimateGas({
+          from: window.klaytn.selectedAddress,
+          value,});
+
+      const send = await sendContract.methods //민팅보냄
+        .publicSale(saleInfo.saleId,amount)
+        .send({
+          from: window.klaytn.selectedAddress,
+          value,
+          gas});
+       
+      if (send) {
+        alert(
+          `${amount}장 민팅에 성공하였습니다.`
+         );
+        }
+      }catch (error) {const message = error?.message;
+        console.log(message);
+        if (message?.includes("User denied transaction")) {
+          return alert(
+            "요청을 취소하였습니다."
+          );
+        }
+        if (message?.includes('Invalid "from" address')) {
+          return alert(
+            "현재 연결한 지갑 정보를 확인해 주세요."
+          );
+        }
+        alert("민팅에 실패하였습니다.");
+      };
   }
 }
 
