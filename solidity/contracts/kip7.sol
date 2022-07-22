@@ -1,34 +1,37 @@
-// SPDX-License-Identifier: bellygom
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@klaytn/contracts/access/Ownable.sol"; 
-import "@klaytn/contracts/access/AccessControlEnumerable.sol"; 
-import "@klaytn/contracts/KIP/token/KIP17/extensions/IKIP17Enumerable.sol";
+import "@klaytn/contracts/KIP/token/KIP7/extensions/KIP7Mintable.sol";
+import "@klaytn/contracts/KIP/token/KIP7/extensions/KIP7Burnable.sol";
+import "@klaytn/contracts/KIP/token/KIP7/extensions/KIP7Pausable.sol";
+import "@klaytn/contracts/access/Ownable.sol";
 
-import "@klaytn/contracts/KIP/token/KIP7/IKIP7.sol";   
-
-contract NFTstaking is AccessControlEnumerable, Ownable {
-    IKIP17Enumerable private nftToken; // nft 토큰
-    
-    mapping(uint256 => uint256) public NFTidTokenList;
-
-      constructor(
-        address _KIP17Address               // nft 토큰 컨트랙트 주소
-        ) public {
-            nftToken = IKIP17Enumerable(_KIP17Address);       //연결 
-            _setupRole(DEFAULT_ADMIN_ROLE, _msgSender()); 
+contract MyToken is  KIP7Mintable, KIP7Burnable, KIP7Pausable, Ownable {
+     constructor(string memory name_, string memory symbol_) KIP7(name_, symbol_){
+        _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
+        _setupRole(MINTER_ROLE, _msgSender());  
+        _setupRole(PAUSER_ROLE, _msgSender()); 
     }
 
-    function setTokenSprinkle (uint256 _amount) public onlyRole(DEFAULT_ADMIN_ROLE) returns(uint256){
-        uint256 NFTNum = nftToken.totalSupply();
-        require(NFTNum != 0, "nftToken totalSupply counte zero");
-        require(_amount != 0, "nftToken totalSupply counte zero");
-              
-               for (uint256 i = 0; i < NFTNum; i++) {
-                 NFTidTokenList[i] += _amount;
-               }
-
-        return NFTNum;
+     function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(KIP7Mintable,  KIP7Burnable, KIP7Pausable)
+        returns (bool)
+    {
+        return
+            KIP7Mintable.supportsInterface(interfaceId) ||
+            KIP7Burnable.supportsInterface(interfaceId) ||
+            KIP7Pausable.supportsInterface(interfaceId) ;
     }
-    
+
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 tokenId
+    ) internal virtual override(KIP7, KIP7Pausable) {
+        super._beforeTokenTransfer(from, to, tokenId);
+    }
 }
+

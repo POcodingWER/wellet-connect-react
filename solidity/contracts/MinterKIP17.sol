@@ -40,7 +40,7 @@ contract MinterKIP17 is Ownable, AccessControlEnumerable{
 
     address payable private walletAddress; // 판매금액 판을 지갑 주소
     IKIP17Token private nftToken; // nft 토큰
-    // IKIP7 private kip7Token;     //kip7 토큰 (kip7로 구매시)
+    IKIP7 private kip7Token;     //kip7 토큰 (kip7로 구매시)
     Whitelist private whiteListContract;    // 화이트리스트 Contract
 
     struct SaleInfo {
@@ -59,7 +59,7 @@ contract MinterKIP17 is Ownable, AccessControlEnumerable{
 
     constructor(
         address payable _walletAddress,         // 판매 금액 받을 지갑 주소
-        // address _kip7Token,                  // kip7 토큰 컨트랙트 주소
+        address _kip7Token,                  // kip7 토큰 컨트랙트 주소
         address _KIP17Address,               // nft 토큰 컨트랙트 주소
         address _whiteListContractAddress,   // 화이트 리스트 컨트랙트 주소
         string memory _baseTokenURI             //NFT 메타데이터 Uri
@@ -67,7 +67,7 @@ contract MinterKIP17 is Ownable, AccessControlEnumerable{
             walletAddress = _walletAddress;     //코인보낼 지갑주소
             nftToken = IKIP17Token(_KIP17Address);       //연결 
             whiteListContract = Whitelist(_whiteListContractAddress);       //화리연결
-            // kip7Token = IKIP7(_kip7Token);
+            kip7Token = IKIP7(_kip7Token);
             baseTokenURI = _baseTokenURI;           //MetaData 주소 
             _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());   //관리자 선정
     }
@@ -128,6 +128,32 @@ contract MinterKIP17 is Ownable, AccessControlEnumerable{
         );
         }
     }
+    // kip7사용할때오픈
+    // function whitelistSaleForKIP7(uint256 saleId, uint256 amount) public checkSaleInfo(saleId, amount){
+    //     require(currentSaleType == SaleType.Whitelist, "Not match saleType");
+
+    //     SaleInfo memory saleInfo = saleInfoById[saleId];
+
+    //     require(whiteListContract.isSaleWhitelist(saleId, msg.sender, buyAmountByWallet[saleId][msg.sender], amount), "not white list");
+        
+    //     uint256 kip7Balance = kip7Token.balanceOf(msg.sender);
+    //     require(kip7Balance >= saleInfo.saleKIP7Amount*amount, "not enough kip7");
+
+    //     // 판매금액 전송
+    //     kip7Token.transferFrom(address(msg.sender), walletAddress, saleInfo.saleKIP7Amount*amount);
+
+    //     for (uint256 i = 0; i < amount; i++) {
+    //     uint256 tokenId = tokenIdCounter.current();
+    //     tokenIdCounter.increment();
+
+    //     //nft 토큰 전송
+    //     nftToken.mintWithTokenURI(
+    //         msg.sender,
+    //         tokenId,
+    //         string(abi.encodePacked(baseTokenURI, Strings.toString(tokenId), ".json"))
+    //     );
+    //     }
+    // }
 
     //퍼블
     function publicSale(uint256 saleId, uint256 amount) public payable checkSaleInfo(saleId, amount) {
@@ -153,6 +179,29 @@ contract MinterKIP17 is Ownable, AccessControlEnumerable{
         }
     }
 
+    //kip7 사용할때오픈
+    // function publicSaleForKIP7(uint256 saleId, uint256 amount) public checkSaleInfo(saleId, amount) {
+    //     require(currentSaleType == SaleType.Public, "Not match saleType");
+
+    //     SaleInfo memory saleInfo = saleInfoById[saleId];
+    //     uint256 kip7Balance = kip7Token.balanceOf(msg.sender);
+    //     require(kip7Balance >= saleInfo.saleKIP7Amount*amount, "not enough kip7");
+
+    //     // 판매금액 전송
+    //     kip7Token.transferFrom(address(msg.sender), walletAddress, saleInfo.saleKIP7Amount*amount);
+
+    //     for (uint256 i = 0; i < amount; i++) {
+    //     uint256 tokenId = tokenIdCounter.current();
+    //     tokenIdCounter.increment();
+
+    //     //nft 토큰 전송
+    //     nftToken.mintWithTokenURI(
+    //         msg.sender,
+    //         tokenId,
+    //         string(abi.encodePacked(baseTokenURI, Strings.toString(tokenId), ".json"))
+    //     );
+    //     }
+    // }
 
 
 
@@ -177,15 +226,15 @@ contract MinterKIP17 is Ownable, AccessControlEnumerable{
         uint256 lastSaleTokenId,    // 순서대로 판매시 마지막 토큰Id (99로 설정시 0부터 99까지 100개 판매가능)
         uint256 buyAmountPerWallet,
         uint256 buyAmountPerTrx,
-        uint256 saleKlayAmount
-        // uint256 saleKIP7Amount
+        uint256 saleKlayAmount,
+        uint256 saleKIP7Amount
     ) public onlyRole(DEFAULT_ADMIN_ROLE) {
         saleInfoById[saleId].startBlockNumber = startBlockNumber;
         saleInfoById[saleId].lastSaleTokenId = lastSaleTokenId;
         saleInfoById[saleId].buyAmountPerWallet = buyAmountPerWallet;
         saleInfoById[saleId].buyAmountPerTrx = buyAmountPerTrx;
         saleInfoById[saleId].saleKlayAmount = saleKlayAmount;
-        // saleInfoById[saleId].saleKIP7Amount = saleKIP7Amount;
+        saleInfoById[saleId].saleKIP7Amount = saleKIP7Amount;
 
         if (saleId > lastSaleId) {
         lastSaleId = saleId;            //세일아이디 체인지
@@ -236,12 +285,12 @@ contract MinterKIP17 is Ownable, AccessControlEnumerable{
 
     
     function setAddress(     //constructor에서 설정해서 만약을위해서 
-        // address _kip7Token,
+        address _kip7Token,
         address _nftToken,
         address _whiteListContract,
         address payable _walletAddress
     ) public onlyRole(DEFAULT_ADMIN_ROLE) {
-        // kip7Token = IKIP7(_kip7Token);
+        kip7Token = IKIP7(_kip7Token);
         nftToken = IKIP17Token(_nftToken);
         whiteListContract = Whitelist(_whiteListContract);
         walletAddress = _walletAddress;
@@ -252,14 +301,14 @@ contract MinterKIP17 is Ownable, AccessControlEnumerable{
         view
         onlyRole(DEFAULT_ADMIN_ROLE)
         returns (
-        // IKIP7 _kip7Token,
+        IKIP7 _kip7Token,
         IKIP17Token _nftToken,
         Whitelist _whiteListContract,
         address _walletAddress
         )
     {
         return (
-            // kip7Token, 
+            kip7Token, 
             nftToken, 
             whiteListContract, 
             walletAddress);
