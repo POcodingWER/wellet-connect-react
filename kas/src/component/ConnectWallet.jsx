@@ -3,7 +3,7 @@ import MinterKIP17 from'../abi/MinterKIP17.json'
 
 export default function ConnectWallet({caver,caverExtKAS}) {
 const MinterAddress = '0x7c6C70AB930E5637f5F862629A67D47C3403cC34'      //env로빼야될듯?
-const amount = 1;   //구매수량 
+const [amount, setAmount] = useState(1)
 
 const [saleInfo, setSaleInfo] = useState({
   saleId:"",
@@ -162,6 +162,11 @@ const mint = async ()=>{
 
   return (
     <div>ConnectWallet  <br/>Saleinfo :{saleInfo.currentSaleType===0?'Whitelist':'Public'}
+      <div>
+          <button onClick={()=>{setAmount(amount-1)}}>- </button>
+          구매수량: {amount}
+          <button onClick={()=>{setAmount(amount+1)}}>+ </button>
+      </div>
        {btnName
        ?
        <div>

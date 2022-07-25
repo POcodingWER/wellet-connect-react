@@ -1,4 +1,4 @@
-import logo from './logo.svg';
+import React,{useState,useEffect,useCallback} from 'react'
 import './App.css';
 import CaverExtKAS from'caver-js-ext-kas'
 import Caver from'caver-js'
@@ -6,6 +6,7 @@ import Caver from'caver-js'
 
 import ConnectWallet from './component/ConnectWallet';
 import GetSaleInfo from './component/GetSaleInfo';
+import Test from './Test';
 
 const accessKeyId = "";
 const secretAccessKey = "";
@@ -29,6 +30,7 @@ function App() {
       <header className="App-header">
         <ConnectWallet caverExtKAS={caverExtKAS} caver={caver} />
         <GetSaleInfo caverExtKAS={caverExtKAS}/>
+        {/* <Test /> */}
       </header>
     </div>
   );
