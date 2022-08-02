@@ -51,7 +51,7 @@ const getAllowance =async ()=>{
           <button style={{width:'100px',height:'100px'}} onClick={setToken}> 토큰 넣어줌</button> <br/>
           <input class="form-control" id="kip7" onChange={(e)=>setSetAdr1(e.target.value)} placeholder="0x1234" />
           <button style={{width:'100px',height:'100px'}} onClick={getBalanceOf}> 몇개가지고있는지 확인</button>
-          <button style={{width:'100px',height:'100px'}} onClick={getBalanceOf}> 승인받았는지</button>
+          <button style={{width:'100px',height:'100px'}} onClick={getAllowance}> 승인받았는지</button>
         </div>
     </div>
   )
