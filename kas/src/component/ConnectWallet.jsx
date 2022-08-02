@@ -40,9 +40,9 @@ useEffect(() => {
   
     }
     getInfo()
-    if(window.klaytn.networkVersion===1001){
-      alert('Kaikas net-work versoin check!' );
-    }
+    // if(window.klaytn.networkVersion===1001){
+    //   alert('Kaikas net-work versoin check!' );
+    // }
 }
 }, [caverExtKAS])
 

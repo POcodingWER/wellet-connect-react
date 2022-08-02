@@ -1,0 +1,31 @@
+{
+    "image": "",
+    "name": "BellyGom#",
+    "description": "A warm welcome to Bellygom World! Bellygom World is an NFT created by Lotte Home Shopping, and FingerVerse. We've created 10K NFTs based on Klaytn. Come enjoy several online and offline benefits with the Bellygom NFTs! ",
+    "attributes": [
+      {
+        "trait_type": "Background", 
+        "value": "None" 
+      },
+      {
+        "trait_type": "Body", 
+        "value": "None"
+      },
+      {
+        "trait_type": "Clothes", 
+        "value": "None"
+      },
+      {
+        "trait_type": "HairCap", 
+        "value": "None"
+      },
+      {
+        "trait_type": "Accessory", 
+        "value": "None"
+      },
+      {
+        "trait_type": "Special",
+        "value": "None"
+      }
+    ]
+  }
