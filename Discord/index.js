@@ -17,7 +17,7 @@ const { add_nft_role } = require("./bot");      //bot  기능 구현 실행해�
 /*test */
 const rpcURL = "https://public-node-api.klaytnapi.com/v1/baobab"
 const caver = new Caver(rpcURL);
-const CONTRACT_ADDR = "0xFB9122f14DD164Fa158382A85b4958E12d57642e";
+const CONTRACT_ADDR = "0x4effC40c01F77F274D059506fF884Ba000E16588";
 let contract = null;
 
 async function initContract() { //컨트렉트 설정
@@ -104,7 +104,7 @@ app.post("/api_wallet", async (req, res) => {      //지갑연결
   
 
 
-
+//서버 포트로 오픈
 app.listen(port, () =>
   console.log(`App listening at http://localhost:${port}`)
 );

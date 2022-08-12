@@ -1,7 +1,7 @@
 const { MessageEmbed } = require("discord.js");
 
 const ROLE_HOLDER_ID = "994133151255363594";  //discord 권한id
-const CH_VERIFY = "994146274959962162";   //공지방 채널 id
+const CH_VERIFY = "1007159506851078217";   //공지방 채널 id
 const EMOJI = "✅";
 
 async function ready(client) {
