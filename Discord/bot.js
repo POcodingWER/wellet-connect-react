@@ -1,6 +1,6 @@
 const { botToken } = require("./config.js");
 const { Client, Intents } = require("discord.js");
-
+botToken
 const client = new Client({
   intents: [
     Intents.FLAGS.GUILDS,
