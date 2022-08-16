@@ -1,5 +1,6 @@
 import React,{useState,useEffect,useCallback} from 'react'
 import MinterKIP17 from'../abi/MinterKIP17.json'
+import KIP17 from'../abi/OwnableKIP17.json'
 
 export default function ConnectWallet({caver,caverExtKAS}) {
 const MinterAddress = '0x7c6C70AB930E5637f5F862629A67D47C3403cC34'      //env로빼야될듯?
@@ -91,22 +92,18 @@ const unConnectklaytnWellet = async() =>{   //눈속임 진짜로 지갑 끊을�
 
 const mint = async ()=>{
   const contract = new caverExtKAS.klay.Contract(MinterKIP17.abi,MinterAddress);
-  const sendContract = new caver.klay.Contract(MinterKIP17.abi,MinterAddress);
+  const sendContract = new caver.klay.Contract(KIP17,'0x8f5aa6b6dcd2d952a22920e8fe3f798471d05901');
   const value = caverExtKAS.utils.toPeb(saleInfo.saleKlayAmount,'KLAY')*amount;  //peb단위로 변환후 *amount
 
   if(saleInfo.currentSaleType === 0){ //WL
     try {
-      const gas =await contract.methods
-      .whitelistSale(saleInfo.saleId,amount)     //가스비 계산해서
-      .estimateGas({
-        from: window.klaytn.selectedAddress,
-        value});
-      const send = await sendContract.methods //민팅보냄
-      .whitelistSale(saleInfo.saleId,amount)
-      .send({
-        from: window.klaytn.selectedAddress,
-        value,
-        gas});
+      // const gas =await contract.methods
+      // .whitelistSale(saleInfo.saleId,amount)     //가스비 계산해서
+      // .estimateGas({
+      //   from: window.klaytn.selectedAddress,
+      //   value});
+      const send = await sendContract.methods.balanceOf(window.klaytn.selectedAddress).call() //민팅보냄
+      console.log(send);
       if (send) {
         alert(
           `${amount}장 민팅에 성공하였습니다.`

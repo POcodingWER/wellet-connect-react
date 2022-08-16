@@ -82,13 +82,13 @@ const [btnName, setBtnName] = useState(false)
     }
 
     const gas = await contract.methods
-      .approve(minterAdr,tokenValue)
+      .mintWithTokenURI(minterAdr,tokenValue)
       .estimateGas({
         from: window.klaytn.selectedAddress,
         });
 
     const aprove = await contract.methods
-      .approve(minterAdr,tokenValue)
+      .mintWithTokenURI(minterAdr,tokenValue)
       .send({
         from: window.klaytn.selectedAddress,
         gas

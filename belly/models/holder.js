@@ -10,12 +10,12 @@ module.exports = (sequelize, DataTypes) => {
   }
   Holder.init(
 		{
-			address: {
+			discordId: {
 				type: DataTypes.STRING,
 				allowNull: false,
 				primaryKey: true,
 			},
-			discordId: { type: DataTypes.STRING, allowNull: false,},
+			address: { type: DataTypes.STRING, allowNull: false,},
 		},
 		{
 			sequelize,

@@ -16,10 +16,11 @@ async function add_nft_role(user_id) {    //홀더권한 부여 함수
   
   try {
     const guild = client.guilds.cache.get(guilID); //그룹아이디
-    // console.log(guild.name);
+    console.log(guild.name);
     const role = guild.roles.cache.get(roleID); //권한
+    console.log(role.name);
     const member = await guild.members.fetch(user_id);
-
+    console.log(member.user.username);
     if (user_id === undefined) {
       return false;
     }
