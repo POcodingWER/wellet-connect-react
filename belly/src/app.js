@@ -1,9 +1,9 @@
 const express = require("express");
-const models = require("./models");
-const { add_nft_role } = require("./bot");
-const { Holder } = require("./models"); //dbtable 
+const models = require("../models");
+const { add_nft_role } = require("../bot");
+const { Holder } = require("../models"); //dbtable 
 
-const { port, caver, contractAddress, client_id, client_secret, redirect_uri, } = require("./config/config.js");
+const { port, caver, contractAddress, client_id, client_secret, redirect_uri, } = require("../config/config.js");
 const app = express();
 const cors = require("cors");
 
