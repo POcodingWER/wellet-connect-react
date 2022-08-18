@@ -84,8 +84,8 @@ app.post("/api_discord_connect", async (req, res) => {
       return balance;
     }
 
-    ret = await isHolder(wallet_addr);
-
+    const ret = await isHolder(wallet_addr);
+    
     const count = Number(ret);
     if (count < 1) {
       return res.send({
