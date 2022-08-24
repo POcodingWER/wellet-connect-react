@@ -11,7 +11,7 @@ const client = new Client({
   ],
 });
 const botToken =
-  "MTAwNzUwOTMxOTkyNDg2MzEwNw.GQJNjz.qT461TWUYqlmWrXAl3twLOsm5TGQEmiVBtB2AA"; // 봇토큰 넣어주세요
+  ""; // 봇토큰 넣어주세요
 const GUILD_ID = "1007527513993527436";
 const CHANNEL_ID = "1007527513993527439";
 const ROLE_GOOD_ID = "1007542915435876362";
