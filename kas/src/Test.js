@@ -16,79 +16,33 @@ if(accessKeyId===""||secretAccessKey===""){   //kasAPI
     caverExtKAS = new CaverExtKAS(chainId, accessKeyId, secretAccessKey);
 }
 
-function Test({KIP7Adr,minterAdr}) {
-const [btnName, setBtnName] = useState(false)
-
-  // const getOwnershipNftList = async ()=>{ //보유 NFT search
-  //   let nftTokenID = []
-  //   const contract = new caverExtKAS.klay.Contract(KIP17.abi,'0x5544775e57aa4C4D83c606971C03Da06324CC451');
-  //   console.log('보유 nft수',await contract.methods.balanceOf(window.klaytn.selectedAddress).call()); 
-  //   const getBlockEvent = await contract.getPastEvents('Transfer',{ filter:{to:[window.klaytn.selectedAddress],}, fromBlock: 96534898, toBlock:'latest'})
-  //   console.log(getBlockEvent);
-  //  for (const v of getBlockEvent) {
-  //     const findOwner = await contract.methods.ownerOf(v.returnValues.tokenId).call(); 
-  //     if(findOwner.toLowerCase() === window.klaytn.selectedAddress.toLowerCase()) {
-  //       nftTokenID.push(v)
-  //     }
-  //  }
-  //  setfirst(nftTokenID);
-  //   const getOwnerListOfNft = async ()=>{ //보유 NFT자 리스트 search
-  //     let map = new Map();
-  //     const contract = new caverExtKAS.klay.Contract(KIP17.abi, '0x6b07cab0f2d7763162c18d649faa60d0e838e1b9');
-  //     const getBlockEvent = await contract.getPastEvents('Transfer', {
-  //         fromBlock: 96534898,
-  //         toBlock: 'latest'
-  //     });
-
-  //     console.log(getBlockEvent); // 트랜잭션은 총 3개지만 사용된 토큰값은 0 과 1 2개밖에 없다. 민팅 0 , 1 , 1번 토큰 판매
-  //     //자바스크립트에서 map key 값이 같으면 덮어써진다. 결과적으로 블럭을 처음부터 끝까지 가져 올 경우 최종값은 해당 nft 소유자만 남게 된다.
-      
-  //     getBlockEvent.forEach((result) => {
-  //         map.set('토큰 아이디 : '+ result.returnValues.tokenId,'지갑 주소: ' + result.returnValues.to);
-  //     });
-  //     console.log(map);
-  //   }
-  //   getOwnerListOfNft()
-  // }
-  
-  const unConnectklaytnWellet = async() =>{   //눈속임 진짜로 지갑 끊을려면 kaikas 설정에서 끊어야됨
-    if (!window.confirm("지갑연결 끊으시겠습니까.")) {
-    } else {
-        setBtnName(false)
-    }
-  }
-
+function Test() {
   const connectklaytnWellet = async() =>{
     const klaytnConnectSuccess = await window.klaytn.enable(); //지갑연결
     if(klaytnConnectSuccess){   //연결되면
-      setBtnName(true)
       console.log('현제 지갑주소 :', klaytnConnectSuccess);
       console.log('네트워크 넘버 :',window.klaytn.networkVersion, window.klaytn.networkVersion===1001?'Testnet':'MainNet' );
       console.log('선택한 지갑주소:', window.klaytn.selectedAddress);
     }
   }
+  const cotractAddress ='0x69f70cc86CD080bB5038332D9c95cA9676Cd7e7A'
 
-  const getSpender = async ()=>{
-    const tokenValue =  caverExtKAS.utils.toPeb(110, 'KLAY')        //faovr 얼마로 할지
-
-    const contract = new caverExtKAS.klay.Contract(MyToken.abi, KIP7Adr);
-    const balance = await contract.methods.balanceOf(window.klaytn.selectedAddress).call()
+  const mint = async ()=>{    //가스비계산 통신 2번
+    console.log('지갑연결유무:', window.klaytn.selectedAddress);
+    const contract = new caverExtKAS.klay.Contract(KIP17.abi, cotractAddress);
+    const balance = await contract.methods.totalSupply().call()
     
-    console.log(tokenValue);
     console.log('보유토큰',balance); 
-    if(Number(balance)=== 0 ){
-      alert('보유 토큰이없습니다. 관리자에게 문의하세요');
-      return;
-    }
 
     const gas = await contract.methods
-      .mintWithTokenURI(minterAdr,tokenValue)
+      .mintWithTokenURI(window.klaytn.selectedAddress,balance,'naver.com')
       .estimateGas({
         from: window.klaytn.selectedAddress,
         });
-
+    console.log(gas);
+    
     const aprove = await contract.methods
-      .mintWithTokenURI(minterAdr,tokenValue)
+      .mintWithTokenURI(window.klaytn.selectedAddress,balance,'naver.com')
       .send({
         from: window.klaytn.selectedAddress,
         gas
@@ -96,21 +50,67 @@ const [btnName, setBtnName] = useState(false)
       console.log(aprove);
   }
 
+  const mint2 = async ()=>{   //계산없이 통신 1번
+    const tokenValue =  caverExtKAS.utils.toPeb(110, 'KLAY')        //faovr 얼마로 할지
+
+    const contract = new caverExtKAS.klay.Contract(KIP17.abi, cotractAddress);
+    const balance = await contract.methods.totalSupply().call()
+    
+    console.log(tokenValue);
+    console.log('보유토큰',balance); 
+
+    const data = await contract.methods
+      .mintWithTokenURI(window.klaytn.selectedAddress,balance,'naver.com')
+      .encodeABI();
+    console.log(data);
+
+    const params = {
+      type: "SMART_CONTRACT_EXECUTION",
+      from: caverExtKAS.utils.toChecksumAddress(window.klaytn.selectedAddress),   //보내는사람주소
+      to: caverExtKAS.utils.toChecksumAddress(cotractAddress),  //컨트랙트주소
+      data,
+    }
+    
+    const res = await caver.klay.sendTransaction({
+      ...params,
+      gas:1829110,
+     });
+    console.log(res);
+  }
+
+  const noSingSendTx = async () => {   //사인없이 트잭보내기
+    /** 키링생성 */
+    const senderKeyring = await caver.wallet.keyring.create(
+      "퍼블키",
+      "프라이빗키"
+    );
+    console.log(senderKeyring);
+    caver.wallet.add(senderKeyring);
+    /** mint1, mint2 랑다름 caver.contract.create을해야 안에 _wallet이 추가되어 있음*/
+    const contract = new caver.contract.create(KIP17.abi, cotractAddress);
+    console.log(contract);
+    const balance = await contract.methods.totalSupply().call();
+    const receipt = await contract.send(
+      {
+        from: senderKeyring.address,
+        gas: 1000000,
+      },
+      "mintWithTokenURI", //메소드
+      senderKeyring.address,
+      balance,
+      "naver.com"
+    );
+    console.log('생성txHash :',receipt.transactionHash);    //딜레이가 조금생김
+  };
+
   return (
     <div className="App">
       <header>
-        {btnName
-       ?
        <div>
-         <button style={{width:'100px',height:'100px'}} onClick={unConnectklaytnWellet}>1. 지갑연결 끊기</button> <br /><br />
-        <button style={{width:'100px',height:'100px'}} onClick={getSpender}>2. Favor approve</button>
+       <button style={{width:'100px',height:'100px'}} onClick={connectklaytnWellet}>1. 지갑연결</button> <br /><br />
+        <button style={{width:'100px',height:'100px'}} onClick={noSingSendTx}>2. Favor approve</button>
        </div>
-       :
-       <div>
-        <button style={{width:'100px',height:'100px'}} onClick={connectklaytnWellet}>1. 지갑연결</button> <br /><br />
-        <button style={{width:'100px',height:'100px'}} disabled>2. Favor approve</button>
-      </div>
-      }
+      
       </header>
     </div>
   );

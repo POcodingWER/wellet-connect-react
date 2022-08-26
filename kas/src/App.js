@@ -29,8 +29,6 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        {/* <ConnectWallet caverExtKAS={caverExtKAS} caver={caver} /> */}
-        {/* <GetSaleInfo caverExtKAS={caverExtKAS}/> */}
         <Test KIP7Adr={KIP7Adr} minterAdr={minterAdr}/>
         <Routes>
           <Route path="/admin" element={<GetSaleInfo caverExtKAS={caverExtKAS} KIP7Adr={KIP7Adr} minterAdr={minterAdr} />} />
