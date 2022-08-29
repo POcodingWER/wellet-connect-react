@@ -27,11 +27,23 @@ module.exports = {
     //   }
     // },
     ropsten: {
-      url: 'https://ropsten.infura.io/v3/e81fcce544f741798dc16dcb7b33d9d7',
+      url: `https://ropsten.infura.io/v3/${process.env.INFURA_ROPSTEN_API_KEY}`,//인프로통해서 배포
       chainId: 3,
       accounts: [process.env.METAMASK_PRIVATE_KEY],
       saveDeployments: false,
       tags: ["test"]
+    },
+    goerli: {
+      url: `https://eth-goerli.alchemyapi.io/v2/${INFURA_ROPSTEN_API_KEYALCHEMY_GOERLI_API_KEY}`,//알크미
+      chainId: 5,
+      accounts: [process.env.METAMASK_PRIVATE_KEY],
+      saveDeployments: false,
+    },
+    mumbai: {
+      url: `https://polygon-mumbai.g.alchemyapi.io/v2/${process.env.POLYGON_MUMBAI_API_KEY}`,//알크미
+      chainId: 80001,
+      accounts: [process.env.METAMASK_PRIVATE_KEY],
+      saveDeployments: false,
     },
     baobob: {
       url: 'https://public-node-api.klaytnapi.com/v1/baobab',

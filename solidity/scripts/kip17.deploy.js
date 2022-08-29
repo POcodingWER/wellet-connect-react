@@ -2,8 +2,8 @@ const hre = require("hardhat");
 
 async function main() {
  
-  const Greeter = await hre.ethers.getContractFactory("MyCollectible");
-  const greeter = await Greeter.deploy();
+  const Greeter = await hre.ethers.getContractFactory("OwnableKIP17");
+  const greeter = await Greeter.deploy('plase','pplz');
 
   await greeter.deployed();
 
