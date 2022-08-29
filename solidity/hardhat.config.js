@@ -34,7 +34,7 @@ module.exports = {
       tags: ["test"]
     },
     goerli: {
-      url: `https://eth-goerli.alchemyapi.io/v2/${INFURA_ROPSTEN_API_KEYALCHEMY_GOERLI_API_KEY}`,//알크미
+      url: `https://eth-goerli.alchemyapi.io/v2/${ALCHEMY_GOERLI_API_KEY}`,//알크미
       chainId: 5,
       accounts: [process.env.METAMASK_PRIVATE_KEY],
       saveDeployments: false,
