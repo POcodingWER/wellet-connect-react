@@ -281,7 +281,7 @@ function Test() {
         console.log(
           `Failed to verify signer when comparing ${recoveredAddr} to ${from[0]}`
         );
-      }ddwdsdasdsdsfadsf1324e112`232323`
+      }
     } catch (err) {
       console.error(err);
     }
