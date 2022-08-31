@@ -4,9 +4,20 @@ import {
   recoverPersonalSignature,
   recoverTypedSignatureLegacy,
   recoverTypedSignature,
-  recoverTypedSignature_v4 as recoverTypedSignatureV4,} from 'eth-sig-util';
-import { toChecksumAddress } from 'ethereumjs-util';
-
+  recoverTypedSignature_v4 as recoverTypedSignatureV4,
+} from "eth-sig-util";
+import {
+  hstBytecode,
+  hstAbi,
+  piggybankBytecode,
+  piggybankAbi,
+  collectiblesAbi,
+  collectiblesBytecode,
+  failingContractAbi,
+  failingContractBytecode,
+} from "./constants.json";
+import { toChecksumAddress } from "ethereumjs-util";
+import { ethers } from "ethers";
 //설치여부
 if (typeof window.ethereum !== "undefined") {
   console.log("MetaMask is installed!");
@@ -53,8 +64,8 @@ function Test() {
   const [accounts, setAccounts] = useState("");
   const [Encryption, setEncryption] = useState("");
   const [Decryption, setDecryption] = useState("");
-
-
+  const [nftaddress, setNftaddress] = useState("");
+  const ethersProvider = new ethers.providers.Web3Provider(window.ethereum, 'any');
   /**지갑변경 이벤트 함수*/
   window.ethereum.on("accountsChanged", function (accounts) {
     console.log("지갑변경 이벤트 함수", accounts[0]);
@@ -138,70 +149,70 @@ function Test() {
     }
   };
   /** 서명창띄우기 암호화*/
-  const v4_OnSign = async ()=>{
+  const v4_OnSign = async () => {
     const network = await window.ethereum.request({
       method: "eth_chainId",
     });
-    const chainId = parseInt(network, 16)
+    const chainId = parseInt(network, 16);
     const msgParams = {
       domain: {
         chainId: chainId.toString(),
-        name: 'Ether Mail',
-        verifyingContract: '0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC',
-        version: '1',
+        name: "Ether Mail",
+        verifyingContract: "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC",
+        version: "1",
       },
       message: {
-        contents: 'Hello, Bob!',
+        contents: "Hello, Bob!",
         from: {
-          name: 'Cow',
+          name: "Cow",
           wallets: [
-            '0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826',
-            '0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF',
+            "0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826",
+            "0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF",
           ],
         },
         to: [
           {
-            name: 'Bob',
+            name: "Bob",
             wallets: [
-              '0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB',
-              '0xB0BdaBea57B0BDABeA57b0bdABEA57b0BDabEa57',
-              '0xB0B0b0b0b0b0B000000000000000000000000000',
+              "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB",
+              "0xB0BdaBea57B0BDABeA57b0bdABEA57b0BDabEa57",
+              "0xB0B0b0b0b0b0B000000000000000000000000000",
             ],
           },
         ],
       },
-      primaryType: 'Mail',
+      primaryType: "Mail",
       types: {
         EIP712Domain: [
-          { name: 'name', type: 'string' },
-          { name: 'version', type: 'string' },
-          { name: 'chainId', type: 'uint256' },
-          { name: 'verifyingContract', type: 'address' },
+          { name: "name", type: "string" },
+          { name: "version", type: "string" },
+          { name: "chainId", type: "uint256" },
+          { name: "verifyingContract", type: "address" },
         ],
         Group: [
-          { name: 'name', type: 'string' },
-          { name: 'members', type: 'Person[]' },
+          { name: "name", type: "string" },
+          { name: "members", type: "Person[]" },
         ],
         Mail: [
-          { name: 'from', type: 'Person' },
-          { name: 'to', type: 'Person[]' },
-          { name: 'contents', type: 'string' },
+          { name: "from", type: "Person" },
+          { name: "to", type: "Person[]" },
+          { name: "contents", type: "string" },
         ],
         Person: [
-          { name: 'name', type: 'string' },
-          { name: 'wallets', type: 'address[]' },
+          { name: "name", type: "string" },
+          { name: "wallets", type: "address[]" },
         ],
       },
     };
     try {
       const from = await window.ethereum.request({
         method: "eth_requestAccounts", //주소불러와주고 연결안되있으면 연결시켜주는 메소드
-      });;
+      });
       const sign = await window.ethereum.request({
-        method: 'eth_signTypedData_v4',
+        method: "eth_signTypedData_v4",
         params: [from[0], JSON.stringify(msgParams)],
       });
-      console.log(sign); 
+      console.log(sign);
       setEncryption(sign);
     } catch (err) {
       console.error(err);
@@ -268,7 +279,7 @@ function Test() {
         method: "eth_requestAccounts", //주소불러와주고 연결안되있으면 연결시켜주는 메소드
       });
       const sign = Encryption;
-      const recoveredAddr =  recoverTypedSignatureV4({
+      const recoveredAddr = recoverTypedSignatureV4({
         data: msgParams,
         sig: sign,
       });
@@ -286,23 +297,138 @@ function Test() {
       console.error(err);
     }
   };
-  
+  /** Deploy */
+  const ERC721Deploy = async () => {
+    let collectiblesFactory = new ethers.ContractFactory(
+      collectiblesAbi,
+      collectiblesBytecode,
+      ethersProvider.getSigner()
+    );
+    let collectiblesContract;
+    try {
+      collectiblesContract = await collectiblesFactory.deploy();
+      await collectiblesContract.deployTransaction.wait();
+    } catch (error) {
+      throw error;
+    }
+
+    if (collectiblesContract.address === undefined) {
+      return;
+    }
+    console.log(
+      `Contract mined! address: ${collectiblesContract.address} transactionHash: ${collectiblesContract.deployTransaction.hash}`
+    );
+    setNftaddress(collectiblesContract.address);
+  };
+  /** mint */
+  const ERC721Mint = async () => {
+    let collectiblesContract = new ethers.Contract(
+      nftaddress,
+      collectiblesAbi,
+      ethersProvider.getSigner(),
+    );
+    let result = await collectiblesContract.mintCollectibles(
+      1,
+      {
+        from: accounts,
+      }
+    );
+    result = await result.wait();
+    console.log(result);
+  };
+  /** approve */
+  const ERC721approve = async () => {
+    let collectiblesContract = new ethers.Contract(
+      nftaddress,
+      collectiblesAbi,
+      ethersProvider.getSigner(),
+    );
+    let result = await collectiblesContract.approve(
+      '0x9bc5baF874d2DA8D216aE9f137804184EE5AfEF4',
+      1,   //count
+      {
+        from: accounts,
+      },
+    );
+    result = await result.wait();
+    console.log('Approve completed',result);
+  }
+  /** setApprovalForAllButton */
+  const setApprovalForAllButton = async ()=> {
+    let collectiblesContract = new ethers.Contract(
+      nftaddress,
+      collectiblesAbi,
+      ethersProvider.getSigner(),
+    );
+    let result = await collectiblesContract.setApprovalForAll(
+      '0x9bc5baF874d2DA8D216aE9f137804184EE5AfEF4',
+      true,
+      {
+        from: accounts,
+      },
+    );
+    result = await result.wait();
+    console.log('Set Approval For All completed',result);
+  }
+  /** transferFromButton  */
+  const transferFromButton = async() => {
+    let collectiblesContract = new ethers.Contract(
+      nftaddress,
+      collectiblesAbi,
+      ethersProvider.getSigner(),
+    );
+    console.log(collectiblesContract);
+    console.log(accounts);
+    let result = await collectiblesContract.transferFrom(
+      accounts,
+      '0x92962695B0a938974E65c22B1a7bcBA75430c895',
+      1,  //count
+      {
+        from: accounts,
+      },
+    );
+    result = await result.wait();
+    console.log('Transfer From completed',result);
+  }
   return (
     <div className="App">
       <header>
         <div>
           <button
-            style={{ width: "150px", height: "50px" }} onClick={connectEthWellet}>1. 지갑연결</button>
+            style={{ width: "220px", height: "50px" }}onClick={connectEthWellet}>1. 지갑연결</button>
           <br />
-          <button style={{ width: "150px", height: "50px" }} onClick={sendTx}>2. send transaction</button>
+          <button style={{ width: "220px", height: "50px" }} onClick={sendTx}>
+            2. send transaction
+          </button>
           <br />
-          <button style={{ width: "150px", height: "50px" }} onClick={walletAddToken}>3.토큰목록 추가하기 </button>
+          <button
+            style={{ width: "220px", height: "50px" }}onClick={walletAddToken}>3.토큰목록 추가하기</button>
           <br />
-          <button style={{ width: "150px", height: "50px" }} onClick={v4_OnSign}>4. v4_사인창띄우기 암호화 </button>
-          <h >{Encryption}</h>
           <br />
-          <button style={{ width: "150px", height: "50px" }} onClick={SignDecoding}>5. 사인값으로 복호화 </button>
-          <h >{Decryption}</h>
+          <button
+            style={{ width: "220px", height: "50px" }}onClick={v4_OnSign}>4. v4_사인창띄우기 암호화</button>
+          <h>{Encryption}</h>
+          <br />
+          <button
+            style={{ width: "220px", height: "50px" }}onClick={SignDecoding}>5. 사인값으로 복호화</button>
+          <h>{Decryption}</h>
+          <br />
+          <br />
+          <button
+            style={{ width: "220px", height: "50px" }}onClick={ERC721Deploy}>6. 721contract Deploy</button>
+          <h>{nftaddress}</h>
+          <br />
+          <button
+            style={{ width: "220px", height: "50px" }}onClick={ERC721Mint}>7. NFT mint</button>
+          <br />
+          <button
+            style={{ width: "220px", height: "50px" }}onClick={ERC721approve}>8. approve</button>
+          <br />
+          <button
+            style={{ width: "220px", height: "50px" }}onClick={setApprovalForAllButton}>9. setApprovalForAllButton</button>
+          <br />
+          <button
+            style={{ width: "220px", height: "50px" }}onClick={transferFromButton}>10. transferFromButton</button>
         </div>
       </header>
     </div>
