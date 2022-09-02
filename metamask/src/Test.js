@@ -16,8 +16,10 @@ import {
   failingContractAbi,
   failingContractBytecode,
 } from "./constants.json";
+import MinterKIP17 from "./abi/MinterKIP17.json";
 import { toChecksumAddress } from "ethereumjs-util";
 import { ethers } from "ethers";
+
 //설치여부
 if (typeof window.ethereum !== "undefined") {
   console.log("MetaMask is installed!");
@@ -64,7 +66,8 @@ function Test() {
   const [accounts, setAccounts] = useState("");
   const [Encryption, setEncryption] = useState("");
   const [Decryption, setDecryption] = useState("");
-  const [nftaddress, setNftaddress] = useState("");
+  const [nftaddress, setNftaddress] = useState("0xFeD8349e51aF2645cEbeDf8De8BdB204b663F96D");
+  const [minterAddress, setMinterAddress] = useState("0x430e1280472785942dfBaADb3520587f66D4CcaC");
   const ethersProvider = new ethers.providers.Web3Provider(window.ethereum, 'any');
   /**지갑변경 이벤트 함수*/
   window.ethereum.on("accountsChanged", function (accounts) {
@@ -96,14 +99,14 @@ function Test() {
       setAccounts(address[0]);
       console.log(address);
       console.log("connect network : ", chainIdToNetworkName(network));
-      console.log("balance Of : ", parseInt(balance, 16));
+      console.log("balance Of : ", parseInt(balance));
     }
   };
   /** 트렌잭션 보내기 */
   const sendTx = () => {
     window.ethereum
       .request({
-        method: "eth_sendTransaction",
+        method: 'eth_sendTransaction',
         params: [
           {
             from: accounts,
@@ -115,7 +118,7 @@ function Test() {
         ],
       })
       .then((txHash) => console.log("트랜잭션 주소", txHash))
-      .catch((error) => console.error);
+      .catch((error) => console.log('지갑연결 확인해주셈요',error));
   };
   /** 지갑에 토큰추가하기 */
   const walletAddToken = async () => {
@@ -311,7 +314,6 @@ function Test() {
     } catch (error) {
       throw error;
     }
-
     if (collectiblesContract.address === undefined) {
       return;
     }
@@ -371,25 +373,99 @@ function Test() {
     console.log('Set Approval For All completed',result);
   }
   /** transferFromButton  */
-  const transferFromButton = async() => {
+  const transferFromButton = async () => {
     let collectiblesContract = new ethers.Contract(
       nftaddress,
       collectiblesAbi,
-      ethersProvider.getSigner(),
+      ethersProvider.getSigner()
     );
     console.log(collectiblesContract);
     console.log(accounts);
     let result = await collectiblesContract.transferFrom(
       accounts,
-      '0x92962695B0a938974E65c22B1a7bcBA75430c895',
-      1,  //count
+      "0x92962695B0a938974E65c22B1a7bcBA75430c895",
+      1, //count
       {
         from: accounts,
-      },
+      }
     );
     result = await result.wait();
-    console.log('Transfer From completed',result);
+    console.log("Transfer From completed", result);
+  };
+
+  //튜토리얼 끝
+  /** minting */
+  const minterMinting = async () => {
+    let collectiblesContract = new ethers.Contract(
+      minterAddress,
+      MinterKIP17.abi,
+      ethersProvider.getSigner(),
+      );
+      
+    let minterInfo = await collectiblesContract.currentSaleId();
+    console.log(minterInfo);
+    let saleInfo = await collectiblesContract.getSaleInfo(minterInfo)
+    console.log(saleInfo);
+    console.log('판매회차',minterInfo,'트잭당개수',saleInfo.buyAmountPerTrx,);
+
+    let gasPrice = await collectiblesContract.estimateGas.whitelistSale(minterInfo,saleInfo.buyAmountPerTrx,{
+      from: accounts,
+      value: String(saleInfo.saleKlayAmount*saleInfo.buyAmountPerTrx),
+    });
+    console.log(parseInt(gasPrice));
+    /** 판매회차, 판매수량,  */
+    let result = await collectiblesContract.whitelistSale(minterInfo,saleInfo.buyAmountPerTrx, {
+      // from: accounts,
+      value: String(saleInfo.saleKlayAmount*saleInfo.buyAmountPerTrx),
+      // gasPrice:297300,
+    });
+    result = await result.wait();
+    console.log(result);
   }
+  /** minterMintingEncodeing */
+  const minterMintingEncodeing = async () => {
+    let collectiblesContract = new ethers.Contract(
+      minterAddress,
+      MinterKIP17.abi,
+      ethersProvider.getSigner()
+    );
+
+    let minterInfo = await collectiblesContract.currentSaleId();
+    console.log(minterInfo);
+    let saleInfo = await collectiblesContract.getSaleInfo(minterInfo);
+    console.log(saleInfo);
+    console.log("판매회차", minterInfo, "트잭당개수", saleInfo.buyAmountPerTrx);
+
+    let iface = new ethers.utils.Interface(MinterKIP17.abi);
+    let encode = iface.encodeFunctionData("whitelistSale", [minterInfo,saleInfo.buyAmountPerTrx,]);
+    console.log(encode);
+
+    let transaction
+    await window.ethereum
+      .request({
+        method: "eth_sendTransaction",
+        params: [
+          {
+            from: accounts,
+            to: minterAddress,
+            value: saleInfo.saleKlayAmount._hex,
+            data: encode,
+            gas: (294873).toString(16), 
+            gasPrice:(2006567583).toString(16), //TODO: 가스비계산해야됨
+          },
+        ],
+      })
+      .then((txHash) => {console.log("트랜잭션 주소", txHash);transaction = txHash})
+      .catch((error) => console.error);
+      ethersProvider.waitForTransaction(transaction).then((result) => {
+        console.log(result.logs);
+        if (result.logs.length === 0) {
+          return alert('flase')
+        }else{
+          return alert('true')
+        }
+      });
+  };
   return (
     <div className="App">
       <header>
@@ -429,6 +505,13 @@ function Test() {
           <br />
           <button
             style={{ width: "220px", height: "50px" }}onClick={transferFromButton}>10. transferFromButton</button>
+          <br />
+          <br />
+          <button
+            style={{ width: "220px", height: "50px" }}onClick={minterMinting}>11. 민팅이 가능할때만 사인창뜸</button>
+          <br />
+          <button
+            style={{ width: "220px", height: "50px" }}onClick={minterMintingEncodeing}>12. 민팅이 가능할때만 사인창뜸</button>
         </div>
       </header>
     </div>
