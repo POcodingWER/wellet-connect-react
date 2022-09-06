@@ -66,9 +66,16 @@ function Test() {
   const [accounts, setAccounts] = useState("");
   const [Encryption, setEncryption] = useState("");
   const [Decryption, setDecryption] = useState("");
-  const [nftaddress, setNftaddress] = useState("0xFeD8349e51aF2645cEbeDf8De8BdB204b663F96D");
-  const [minterAddress, setMinterAddress] = useState("0x430e1280472785942dfBaADb3520587f66D4CcaC");
-  const ethersProvider = new ethers.providers.Web3Provider(window.ethereum, 'any');
+  const [nftaddress, setNftaddress] = useState(
+    "0xFeD8349e51aF2645cEbeDf8De8BdB204b663F96D"
+  );
+  const [minterAddress, setMinterAddress] = useState(
+    "0x430e1280472785942dfBaADb3520587f66D4CcaC"
+  );
+  const ethersProvider = new ethers.providers.Web3Provider(
+    window.ethereum,
+    "any"
+  );
   /**지갑변경 이벤트 함수*/
   window.ethereum.on("accountsChanged", function (accounts) {
     console.log("지갑변경 이벤트 함수", accounts[0]);
@@ -106,7 +113,7 @@ function Test() {
   const sendTx = () => {
     window.ethereum
       .request({
-        method: 'eth_sendTransaction',
+        method: "eth_sendTransaction",
         params: [
           {
             from: accounts,
@@ -118,7 +125,7 @@ function Test() {
         ],
       })
       .then((txHash) => console.log("트랜잭션 주소", txHash))
-      .catch((error) => console.log('지갑연결 확인해주셈요',error));
+      .catch((error) => console.log("지갑연결 확인해주셈요", error));
   };
   /** 지갑에 토큰추가하기 */
   const walletAddToken = async () => {
@@ -327,14 +334,11 @@ function Test() {
     let collectiblesContract = new ethers.Contract(
       nftaddress,
       collectiblesAbi,
-      ethersProvider.getSigner(),
+      ethersProvider.getSigner()
     );
-    let result = await collectiblesContract.mintCollectibles(
-      1,
-      {
-        from: accounts,
-      }
-    );
+    let result = await collectiblesContract.mintCollectibles(1, {
+      from: accounts,
+    });
     result = await result.wait();
     console.log(result);
   };
@@ -343,35 +347,35 @@ function Test() {
     let collectiblesContract = new ethers.Contract(
       nftaddress,
       collectiblesAbi,
-      ethersProvider.getSigner(),
+      ethersProvider.getSigner()
     );
     let result = await collectiblesContract.approve(
-      '0x9bc5baF874d2DA8D216aE9f137804184EE5AfEF4',
-      1,   //count
+      "0x9bc5baF874d2DA8D216aE9f137804184EE5AfEF4",
+      1, //count
       {
         from: accounts,
-      },
+      }
     );
     result = await result.wait();
-    console.log('Approve completed',result);
-  }
+    console.log("Approve completed", result);
+  };
   /** setApprovalForAllButton */
-  const setApprovalForAllButton = async ()=> {
+  const setApprovalForAllButton = async () => {
     let collectiblesContract = new ethers.Contract(
       nftaddress,
       collectiblesAbi,
-      ethersProvider.getSigner(),
+      ethersProvider.getSigner()
     );
     let result = await collectiblesContract.setApprovalForAll(
-      '0x9bc5baF874d2DA8D216aE9f137804184EE5AfEF4',
+      "0x9bc5baF874d2DA8D216aE9f137804184EE5AfEF4",
       true,
       {
         from: accounts,
-      },
+      }
     );
     result = await result.wait();
-    console.log('Set Approval For All completed',result);
-  }
+    console.log("Set Approval For All completed", result);
+  };
   /** transferFromButton  */
   const transferFromButton = async () => {
     let collectiblesContract = new ethers.Contract(
@@ -399,34 +403,6 @@ function Test() {
     let collectiblesContract = new ethers.Contract(
       minterAddress,
       MinterKIP17.abi,
-      ethersProvider.getSigner(),
-      );
-      
-    let minterInfo = await collectiblesContract.currentSaleId();
-    console.log(minterInfo);
-    let saleInfo = await collectiblesContract.getSaleInfo(minterInfo)
-    console.log(saleInfo);
-    console.log('판매회차',minterInfo,'트잭당개수',saleInfo.buyAmountPerTrx,);
-
-    let gasPrice = await collectiblesContract.estimateGas.whitelistSale(minterInfo,saleInfo.buyAmountPerTrx,{
-      from: accounts,
-      value: String(saleInfo.saleKlayAmount*saleInfo.buyAmountPerTrx),
-    });
-    console.log(parseInt(gasPrice));
-    /** 판매회차, 판매수량,  */
-    let result = await collectiblesContract.whitelistSale(minterInfo,saleInfo.buyAmountPerTrx, {
-      // from: accounts,
-      value: String(saleInfo.saleKlayAmount*saleInfo.buyAmountPerTrx),
-      // gasPrice:297300,
-    });
-    result = await result.wait();
-    console.log(result);
-  }
-  /** minterMintingEncodeing */
-  const minterMintingEncodeing = async () => {
-    let collectiblesContract = new ethers.Contract(
-      minterAddress,
-      MinterKIP17.abi,
       ethersProvider.getSigner()
     );
 
@@ -436,82 +412,260 @@ function Test() {
     console.log(saleInfo);
     console.log("판매회차", minterInfo, "트잭당개수", saleInfo.buyAmountPerTrx);
 
-    let iface = new ethers.utils.Interface(MinterKIP17.abi);
-    let encode = iface.encodeFunctionData("whitelistSale", [minterInfo,saleInfo.buyAmountPerTrx,]);
-    console.log(encode);
+    let gasPrice = await collectiblesContract.estimateGas.whitelistSale(
+      minterInfo,
+      saleInfo.buyAmountPerTrx,
+      {
+        from: accounts,
+        value: String(saleInfo.saleKlayAmount * saleInfo.buyAmountPerTrx),
+      }
+    );
+    console.log(parseInt(gasPrice));
+    /** 판매회차, 판매수량,  */
+    let result = await collectiblesContract.whitelistSale(
+      minterInfo,
+      saleInfo.buyAmountPerTrx,
+      {
+        // from: accounts,
+        value: String(saleInfo.saleKlayAmount * saleInfo.buyAmountPerTrx),
+        // gasPrice:297300,
+      }
+    );
+    result = await result.wait();
+    console.log(result);
+  };
+  /** MintingEncodeing ethers tx 보내기*/
+  const minterMintingEncodeingEthersSendTx = async () => {
+    const signer = ethersProvider.getSigner();
+    console.log(signer);
 
-    let transaction
+    let collectiblesContract = new ethers.Contract(
+      minterAddress,
+      MinterKIP17.abi,
+      ethersProvider.getSigner()
+    );
+
+    let minterInfo = await collectiblesContract.currentSaleId();
+    let saleInfo = await collectiblesContract.getSaleInfo(minterInfo);
+    console.log("판매회차",parseInt(minterInfo),"트잭당개수",parseInt(saleInfo.buyAmountPerTrx));
+
+    let iface = new ethers.utils.Interface(MinterKIP17.abi);
+    let encode = iface.encodeFunctionData("whitelistSale", [
+      minterInfo,
+      saleInfo.buyAmountPerTrx,
+    ]);
+    console.log("encode :", encode);
+
+    let params = {
+      from: accounts, //내꺼지갑주소
+      to: minterAddress, //어디로보낼지
+      value: saleInfo.saleKlayAmount._hex, //이더
+      data: encode, //코드
+      // gas: (293614).toString(16),           //가스 16진수
+      // gasPrice:(2100000012).toString(16),   //TODO: 가스비계산해야됨
+    };
+
+    const txHash = await signer.sendTransaction(params);
+    console.log("생성 해쉬 :", txHash);
+    const result = await txHash.wait();
+    console.log("Success", result);
+  };
+  /** MintingEncodeing 메타마스크로 tx 보내기 */
+  const minterMintingEncodeing = async () => {
+    console.log(ethersProvider.getSigner());
+    let collectiblesContract = new ethers.Contract(
+      minterAddress,
+      MinterKIP17.abi,
+      ethersProvider.getSigner()
+    );
+
+    let minterInfo = await collectiblesContract.currentSaleId();
+    let saleInfo = await collectiblesContract.getSaleInfo(minterInfo);
+    console.log(
+      "판매회차",
+      parseInt(minterInfo),
+      "트잭당개수",
+      parseInt(saleInfo.buyAmountPerTrx)
+    );
+
+    let iface = new ethers.utils.Interface(MinterKIP17.abi);
+    let encode = iface.encodeFunctionData("whitelistSale", [
+      minterInfo,
+      saleInfo.buyAmountPerTrx,
+    ]);
+    console.log("encode :", encode);
+
+    let transactionHash;
     await window.ethereum
       .request({
         method: "eth_sendTransaction",
         params: [
           {
-            from: accounts,
-            to: minterAddress,
-            value: saleInfo.saleKlayAmount._hex,
-            data: encode,
-            gas: (294873).toString(16), 
-            gasPrice:(2006567583).toString(16), //TODO: 가스비계산해야됨
+            from: accounts, //내꺼지갑주소
+            to: minterAddress, //어디로보낼지
+            value: saleInfo.saleKlayAmount._hex, //이더
+            data: encode, //코드
+            gas: (294873).toString(16), //가스 16진수
+            gasPrice: (206567583).toString(16), //TODO: 가스비계산해야됨
           },
         ],
       })
-      .then((txHash) => {console.log("트랜잭션 주소", txHash);transaction = txHash})
+      .then((txHash) => {
+        console.log("트랜잭션 주소", txHash);
+        transactionHash = txHash;
+      })
       .catch((error) => console.error);
-      ethersProvider.waitForTransaction(transaction).then((result) => {
-        console.log(result.logs);
-        if (result.logs.length === 0) {
-          return alert('flase')
-        }else{
-          return alert('true')
-        }
-      });
+    ethersProvider.waitForTransaction(transactionHash).then((result) => {
+      console.log(result.logs);
+      if (result.logs.length === 0) {
+        return alert("flase");
+      } else {
+        return alert("true");
+      }
+    });
   };
+
+  /** 바로 tx보내기 */
+  const metamaskNusignSendTx = async () => {
+    const signer = new ethers.Wallet("private key넣어주셈", ethersProvider);
+    console.log("연결된 Wallet address ;", signer.address);
+
+    let collectiblesContract = new ethers.Contract(
+      minterAddress,
+      MinterKIP17.abi,
+      signer //지갑넣기 signer 생겨있음
+    );
+    console.log(
+      "컨트렉트에 연결되어있는 지갑주소:",
+      collectiblesContract.signer.address
+    );
+
+    let minterInfo = await collectiblesContract.currentSaleId();
+    let saleInfo = await collectiblesContract.getSaleInfo(minterInfo);
+    console.log(
+      "판매회차",
+      parseInt(minterInfo),
+      "트잭당개수",
+      parseInt(saleInfo.buyAmountPerTrx)
+    );
+
+    let result = await collectiblesContract.whitelistSale(
+      minterInfo,
+      saleInfo.buyAmountPerTrx,
+      {
+        value: String(saleInfo.saleKlayAmount * saleInfo.buyAmountPerTrx),
+      }
+    );
+    console.log("pending Tx :", result.hash);
+    result = await result.wait();
+
+    console.log("Success", result);
+  };
+
   return (
     <div className="App">
       <header>
         <div>
           <button
-            style={{ width: "220px", height: "50px" }}onClick={connectEthWellet}>1. 지갑연결</button>
+            style={{ width: "220px", height: "50px" }}
+            onClick={connectEthWellet}
+          >
+            1. 지갑연결
+          </button>
           <br />
           <button style={{ width: "220px", height: "50px" }} onClick={sendTx}>
             2. send transaction
           </button>
           <br />
           <button
-            style={{ width: "220px", height: "50px" }}onClick={walletAddToken}>3.토큰목록 추가하기</button>
+            style={{ width: "220px", height: "50px" }}
+            onClick={walletAddToken}
+          >
+            3.토큰목록 추가하기
+          </button>
           <br />
           <br />
           <button
-            style={{ width: "220px", height: "50px" }}onClick={v4_OnSign}>4. v4_사인창띄우기 암호화</button>
+            style={{ width: "220px", height: "50px" }}
+            onClick={v4_OnSign}
+          >
+            4. v4_사인창띄우기 암호화
+          </button>
           <h>{Encryption}</h>
           <br />
           <button
-            style={{ width: "220px", height: "50px" }}onClick={SignDecoding}>5. 사인값으로 복호화</button>
+            style={{ width: "220px", height: "50px" }}
+            onClick={SignDecoding}
+          >
+            5. 사인값으로 복호화
+          </button>
           <h>{Decryption}</h>
           <br />
           <br />
           <button
-            style={{ width: "220px", height: "50px" }}onClick={ERC721Deploy}>6. 721contract Deploy</button>
+            style={{ width: "220px", height: "50px" }}
+            onClick={ERC721Deploy}
+          >
+            6. 721contract Deploy
+          </button>
           <h>{nftaddress}</h>
           <br />
           <button
-            style={{ width: "220px", height: "50px" }}onClick={ERC721Mint}>7. NFT mint</button>
+            style={{ width: "220px", height: "50px" }}
+            onClick={ERC721Mint}
+          >
+            7. NFT mint
+          </button>
           <br />
           <button
-            style={{ width: "220px", height: "50px" }}onClick={ERC721approve}>8. approve</button>
+            style={{ width: "220px", height: "50px" }}
+            onClick={ERC721approve}
+          >
+            8. approve
+          </button>
           <br />
           <button
-            style={{ width: "220px", height: "50px" }}onClick={setApprovalForAllButton}>9. setApprovalForAllButton</button>
+            style={{ width: "220px", height: "50px" }}
+            onClick={setApprovalForAllButton}
+          >
+            9. setApprovalForAllButton
+          </button>
           <br />
           <button
-            style={{ width: "220px", height: "50px" }}onClick={transferFromButton}>10. transferFromButton</button>
+            style={{ width: "220px", height: "50px" }}
+            onClick={transferFromButton}
+          >
+            10. transferFromButton
+          </button>
           <br />
           <br />
           <button
-            style={{ width: "220px", height: "50px" }}onClick={minterMinting}>11. 민팅이 가능할때만 사인창뜸</button>
+            style={{ width: "220px", height: "50px" }}
+            onClick={minterMinting}
+          >
+            11. 민팅이 조건이맞을 때만 사인창뜸
+          </button>
           <br />
           <button
-            style={{ width: "220px", height: "50px" }}onClick={minterMintingEncodeing}>12. 민팅이 가능할때만 사인창뜸</button>
+            style={{ width: "220px", height: "50px" }}
+            onClick={minterMintingEncodeingEthersSendTx}
+          >
+            12. 지갑연결후 사용 <br /> 사인창 조건맞을때 생성(ethers로 트젝보내기)
+          </button>
+          <br />
+          <button
+            style={{ width: "220px", height: "50px" }}
+            onClick={minterMintingEncodeing}
+          >
+            12. 지갑연결후 사용 <br /> 사인창 무조건뜸(메타마스크로 트젝보내기)
+          </button>
+          <br />
+          <button
+            style={{ width: "220px", height: "50px" }}
+            onClick={metamaskNusignSendTx}
+          >
+            13. 사인창없이 바로 tx
+          </button>
         </div>
       </header>
     </div>

@@ -78,7 +78,7 @@ function Test() {
     console.log(res);
   }
 
-  const noSingSendTx = async () => {   //사인없이 트잭보내기
+  const noSignSendTx = async () => {   //사인없이 트잭보내기
     /** 키링생성 */
     const senderKeyring = await caver.wallet.keyring.create(
       "퍼블키",
@@ -103,12 +103,33 @@ function Test() {
     console.log('생성txHash :',receipt.transactionHash);    //딜레이가 조금생김
   };
 
+  const findTokenNum = async () => {
+    console.log("지갑연결유무:", window.klaytn.selectedAddress);
+    const contract = new caverExtKAS.klay.Contract(KIP17.abi, cotractAddress);
+    
+    const balance = await contract.methods.totalSupply().call();
+    console.log("총발행 토큰", balance);
+
+    let countNFT = await contract.methods
+      .balanceOf(window.klaytn.selectedAddress)
+      .call();
+      console.log('보유개수',countNFT);
+    let nftTokenIdArray = [];
+    for (let i = 0; i < countNFT; i++) {
+      nftTokenIdArray.push(
+        await contract.methods
+          .tokenOfOwnerByIndex(window.klaytn.selectedAddress, i)
+          .call()
+      );
+    }
+    console.log('보유토큰 num: ', nftTokenIdArray);
+  };
   return (
     <div className="App">
       <header>
        <div>
        <button style={{width:'100px',height:'100px'}} onClick={connectklaytnWellet}>1. 지갑연결</button> <br /><br />
-        <button style={{width:'100px',height:'100px'}} onClick={noSingSendTx}>2. Favor approve</button>
+        <button style={{width:'100px',height:'100px'}} onClick={findTokenNum}>2. Favor approve</button>
        </div>
       
       </header>
