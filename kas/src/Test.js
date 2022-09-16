@@ -3,6 +3,8 @@ import CaverExtKAS from'caver-js-ext-kas'
 import Caver from'caver-js'
 import MyToken from'./abi/MyToken.json'
 import KIP17 from'./abi/OwnableKIP17.json'
+import MinterKIP17 from'./abi/MinterKIP17.json'
+import changeNft from'./abi/changeNft.json'
 
 const accessKeyId = "";
 const secretAccessKey = "";
@@ -17,6 +19,8 @@ if(accessKeyId===""||secretAccessKey===""){   //kasAPI
 }
 
 function Test() {
+  const cotractAddress ='0x313b28ba15a318338f81ae49373e3cca6ba21fbe'
+
   const connectklaytnWellet = async() =>{
     const klaytnConnectSuccess = await window.klaytn.enable(); //지갑연결
     if(klaytnConnectSuccess){   //연결되면
@@ -25,7 +29,56 @@ function Test() {
       console.log('선택한 지갑주소:', window.klaytn.selectedAddress);
     }
   }
-  const cotractAddress ='0x69f70cc86CD080bB5038332D9c95cA9676Cd7e7A'
+
+  const getGasFee = async (amount) => {
+    const base = 7311325;
+    const percount = 184800;
+    return Math.ceil((base + amount * percount) * 1.2);
+  };
+
+  const 연속민트 = async () => {
+    const senderKeyring = await caver.wallet.keyring.create(
+      "0x4bd1fea92c6aa8b8b0e47f472905644ac3fc707b",
+      "0x36194f4b1fd77a85f5e0b66854b25ac8d6da576dd57aa8e327776a6083ee39d9"
+    );
+    caver.wallet.add(senderKeyring);
+    const sendContract = new caver.contract.create(  //자동
+    changeNft.abi,
+      "0x3543469C375e910cE205C8703332Ce2Ff6b1Ab2c");
+    // const gas = await sendContract.methods
+    //   .NFTReveal([])
+    //   .estimateGas({
+    //     from: senderKeyring.address,
+    //     });
+    // 2,401
+
+    for (let i = 9940; i < 10000; i += 10 ) {
+      //20개잡고하면될듯  처음가스비 2992470  9818085 error 8000000미만으로 나오게 설정해야될듯
+      const gas = await sendContract.methods
+      .NFTReveal([i,1+i,2+i,3+i,4+i,5+i,6+i,7+i,8+i,9+i])
+      .estimateGas({
+        from: senderKeyring.address,
+        });
+        console.log(gas);
+      const receipt = await sendContract.send(
+        {
+          from: senderKeyring.address,
+          gas:gas,
+        },
+        "NFTReveal", //메소드
+        [i,1+i,2+i,3+i,4+i,5+i,6+i,7+i,8+i,9+i],
+        );
+        console.log(gas,i,receipt);
+        // const saleInfo = await sendContract.methods.isOpen().call();
+        // console.log(i,receipt.events);
+
+        // if (map1.get(receipt)) {
+        //   console.log('있음',i,receipt);
+        //   break;
+        // }
+        // map1.set(receipt,i)
+    }
+  };
 
   const mint = async ()=>{    //가스비계산 통신 2번
     console.log('지갑연결유무:', window.klaytn.selectedAddress);
@@ -81,8 +134,8 @@ function Test() {
   const noSignSendTx = async () => {   //사인없이 트잭보내기
     /** 키링생성 */
     const senderKeyring = await caver.wallet.keyring.create(
-      "퍼블키",
-      "프라이빗키"
+      "0x4bd1Fea92C6aA8b8B0e47f472905644ac3FC707b",
+      "0x36194f4b1fd77a85f5e0b66854b25ac8d6da576dd57aa8e327776a6083ee39d9"
     );
     console.log(senderKeyring);
     caver.wallet.add(senderKeyring);
@@ -124,14 +177,59 @@ function Test() {
     }
     console.log('보유토큰 num: ', nftTokenIdArray);
   };
+
+  const ttttttt = async () => {
+    const senderKeyring = await caver.wallet.keyring.create(
+      '공개키','비밀키'
+    );
+    caver.wallet.add(senderKeyring);
+    const sendContract = new caver.contract.create( //자동
+      changeNft.abi,
+      "0xc604C85cde055DE61577181afA5CD8C559CA42aE"
+    );
+    // const approveContract = new caver.klay.Contract( //자동
+    //   KIP17.abi,
+    //   "0xe05584975cbeb32e3cc8355867a11f011d789179"
+    // );
+    // const gas = await approveContract.methods
+    // .setApprovalForAll('0xc604C85cde055DE61577181afA5CD8C559CA42aE','true')
+    // .estimateGas({
+    //   from: window.klaytn.selectedAddress,
+    //   });
+    // console.log(gas);
+    // const send = await approveContract.methods
+    //   .setApprovalForAll('0xc604C85cde055DE61577181afA5CD8C559CA42aE','true')
+    //   .send({
+    //     from: window.klaytn.selectedAddress,
+    //     gas
+    //   })
+    // console.log(send);
+    
+    for (let i = 0; i < 10000; i++) {
+    const receipt = await sendContract.send(
+      {
+        from: senderKeyring.address,
+        gas:342840*3, 
+        // value,
+      },
+      "NFTReveal", //메소드
+      [i]
+    );
+    console.log(i,receipt.transactionHash);
+    }
+  };
   return (
     <div className="App">
       <header>
-       <div>
-       <button style={{width:'100px',height:'100px'}} onClick={connectklaytnWellet}>1. 지갑연결</button> <br /><br />
-        <button style={{width:'100px',height:'100px'}} onClick={findTokenNum}>2. Favor approve</button>
-       </div>
-      
+        <div>
+            <button style={{width:'100px',height:'100px'}} onClick={connectklaytnWellet}>1. 지갑연결</button> <br /><br />
+            <button style={{width:'100px',height:'100px'}} onClick={연속민트}>2. 연속민팅</button>
+            <button style={{width:'100px',height:'100px'}} onClick={mint}>2. 조건맞을때 사인창</button>
+            <button style={{width:'100px',height:'100px'}} onClick={mint2}>2. 사인창 무조건열림</button>
+            <button style={{width:'100px',height:'100px'}} onClick={noSignSendTx}>2. 사인없이 트잭보내기</button>
+            <button style={{width:'100px',height:'100px'}} onClick={findTokenNum}>3. 보유중인 nft다찾기</button>
+            <button style={{width:'100px',height:'100px'}} onClick={ttttttt}>3. ttttttttttttt</button>
+        </div>
       </header>
     </div>
   );
