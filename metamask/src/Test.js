@@ -70,7 +70,8 @@ function Test() {
     "0xFeD8349e51aF2645cEbeDf8De8BdB204b663F96D"
   );
   const [minterAddress, setMinterAddress] = useState(
-    "0x430e1280472785942dfBaADb3520587f66D4CcaC"
+    // "0x430e1280472785942dfBaADb3520587f66D4CcaC" //괴를리
+    "0x02BF7FF497CF7E59313F022e6b7C9cBA12f2AE7e"    //뭄바이
   );
   const ethersProvider = new ethers.providers.Web3Provider(
     window.ethereum,
@@ -426,9 +427,10 @@ function Test() {
       minterInfo,
       saleInfo.buyAmountPerTrx,
       {
-        // from: accounts,
-        value: String(saleInfo.saleKlayAmount * saleInfo.buyAmountPerTrx),
-        // gasPrice:297300,
+        from: window.ethereum.selectedAddress,
+        value: saleInfo.saleKlayAmount._hex,
+        gasPrice: `0x${(3601002151).toString(16)}`, //TODO: 가스비계산해야됨
+        // gasPrice: gasPrice, //TODO: 가스비계산해야됨
       }
     );
     result = await result.wait();
@@ -438,7 +440,7 @@ function Test() {
   const minterMintingEncodeingEthersSendTx = async () => {
     const signer = ethersProvider.getSigner();
     console.log(signer);
-
+ 
     let collectiblesContract = new ethers.Contract(
       minterAddress,
       MinterKIP17.abi,
@@ -455,14 +457,12 @@ function Test() {
       saleInfo.buyAmountPerTrx,
     ]);
     console.log("encode :", encode);
-
     let params = {
-      from: accounts, //내꺼지갑주소
+      from: window.ethereum.selectedAddress, //내꺼지갑주소
       to: minterAddress, //어디로보낼지
       value: saleInfo.saleKlayAmount._hex, //이더
       data: encode, //코드
-      // gas: (293614).toString(16),           //가스 16진수
-      // gasPrice:(2100000012).toString(16),   //TODO: 가스비계산해야됨
+      gasPrice:`0x${(4356500027).toString(16)}`,   //TODO: 가스비계산해야됨
     };
 
     const txHash = await signer.sendTransaction(params);
@@ -472,13 +472,12 @@ function Test() {
   };
   /** MintingEncodeing 메타마스크로 tx 보내기 */
   const minterMintingEncodeing = async () => {
-    console.log(ethersProvider.getSigner());
+    // console.log(ethersProvider.getSigner());
     let collectiblesContract = new ethers.Contract(
       minterAddress,
       MinterKIP17.abi,
       ethersProvider.getSigner()
     );
-
     let minterInfo = await collectiblesContract.currentSaleId();
     let saleInfo = await collectiblesContract.getSaleInfo(minterInfo);
     console.log(
@@ -501,12 +500,12 @@ function Test() {
         method: "eth_sendTransaction",
         params: [
           {
-            from: accounts, //내꺼지갑주소
+            from: window.ethereum.selectedAddress, //내꺼지갑주소
             to: minterAddress, //어디로보낼지
             value: saleInfo.saleKlayAmount._hex, //이더
             data: encode, //코드
             gas: (294873).toString(16), //가스 16진수
-            gasPrice: (206567583).toString(16), //TODO: 가스비계산해야됨
+            gasPrice: (3356500027).toString(16), //TODO: 가스비계산해야됨
           },
         ],
       })
@@ -515,21 +514,72 @@ function Test() {
         transactionHash = txHash;
       })
       .catch((error) => console.error);
-    ethersProvider.waitForTransaction(transactionHash).then((result) => {
-      console.log(result.logs);
-      if (result.logs.length === 0) {
-        return alert("flase");
+      ethersProvider.waitForTransaction(transactionHash).then(async (result) => {
+        console.log(result);
+        if (result.status === 0) { //0실패 1성공
+          return alert("실패flase");
+        } else {
+          return alert("성공");
+        }
+      });
+  };
+  
+  /** sendUncheckedTransaction */
+  const sendUncheckedTransaction = async ()=>{
+    let collectiblesContract = new ethers.Contract(
+      minterAddress,
+      MinterKIP17.abi,
+      ethersProvider.getSigner()
+    );
+    let minterInfo = await collectiblesContract.currentSaleId();
+    let saleInfo = await collectiblesContract.getSaleInfo(minterInfo);
+
+    /**encode 만들어서 */
+    // let iface = new ethers.utils.Interface(MinterKIP17.abi);
+    // let encode = iface.encodeFunctionData("whitelistSale", [
+    //   minterInfo,
+    //   saleInfo.buyAmountPerTrx,
+    // ]);
+    // console.log("encode :", encode);
+    // let params = {
+    //   from: window.ethereum.selectedAddress, //내꺼지갑주소
+    //   to: minterAddress, //어디로보낼지
+    //   value: saleInfo.saleKlayAmount._hex, //이더
+    //   data: encode, //코드
+    //   gasPrice:`0x${(4356500027).toString(16)}`,   //TODO: 가스비계산해야됨
+    // };
+
+    /**바로  */
+    let result = await collectiblesContract.populateTransaction.
+    whitelistSale(
+      minterInfo,
+      saleInfo.buyAmountPerTrx,
+      {
+        from: window.ethereum.selectedAddress,
+        value: saleInfo.saleKlayAmount._hex,
+        gasPrice: `0x${(3601002151).toString(16)}`, //TODO: 가스비계산해야됨
+      }
+    );
+    console.log(result);
+    let signer = ethersProvider.getSigner()
+    let hash = await signer.sendUncheckedTransaction(result);
+    console.log(hash);
+
+    ethersProvider.waitForTransaction(hash).then(async (result) => {
+      console.log(result);
+      if (result.status === 0) { //0실패 1성공
+        return alert("실패flase");
       } else {
-        return alert("true");
+        return alert("성공");
       }
     });
-  };
+  }
 
-  /** 바로 tx보내기 */
+  /** 바로 tx보내기 연속민팅용*/
   const metamaskNusignSendTx = async () => {
-    const signer = new ethers.Wallet("private key넣어주셈", ethersProvider);
+    const signer = new ethers.Wallet("비밀키 입력발마", ethersProvider);
     console.log("연결된 Wallet address ;", signer.address);
-
+    
     let collectiblesContract = new ethers.Contract(
       minterAddress,
       MinterKIP17.abi,
@@ -562,6 +612,7 @@ function Test() {
     console.log("Success", result);
   };
 
+  
   return (
     <div className="App">
       <header>
@@ -643,28 +694,37 @@ function Test() {
             style={{ width: "220px", height: "50px" }}
             onClick={minterMinting}
           >
-            11. 민팅이 조건이맞을 때만 사인창뜸
+            11. 민팅이 조건이맞을 때만 사인창뜸 <br /> 가스비계산후 보냄
           </button>
           <br />
           <button
             style={{ width: "220px", height: "50px" }}
             onClick={minterMintingEncodeingEthersSendTx}
           >
-            12. 지갑연결후 사용 <br /> 사인창 조건맞을때 생성(ethers로 트젝보내기)
+            12. 사인창 조건맞을때 생성<br />(ethers로 트젝보내기)
           </button>
           <br />
           <button
             style={{ width: "220px", height: "50px" }}
             onClick={minterMintingEncodeing}
           >
-            12. 지갑연결후 사용 <br /> 사인창 무조건뜸(메타마스크로 트젝보내기)
+            13. 사인창 무조건뜸 <br />(메타마스크로 트젝보내기)
           </button>
+          <br />
+          <button
+            style={{ width: "220px", height: "50px" }}
+            onClick={sendUncheckedTransaction}
+          >
+            14. 사인창 무조건띄우기  <br />안되나봄 메타마스크에서 오류뱉음
+            encode변환후 트랜잭션 사인해서 보내기 or 데이터 사인전 만들고 데이터에 사인해서 해쉬값넘김기
+          </button>
+          <br />
           <br />
           <button
             style={{ width: "220px", height: "50px" }}
             onClick={metamaskNusignSendTx}
           >
-            13. 사인창없이 바로 tx
+            15. 사인창없이 바로 tx
           </button>
         </div>
       </header>

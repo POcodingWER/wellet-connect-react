@@ -38,13 +38,13 @@ function Test() {
 
   const 연속민트 = async () => {
     const senderKeyring = await caver.wallet.keyring.create(
-      "0x4bd1fea92c6aa8b8b0e47f472905644ac3fc707b",
-      "0x36194f4b1fd77a85f5e0b66854b25ac8d6da576dd57aa8e327776a6083ee39d9"
+      "공개키",
+      "비밀키"
     );
     caver.wallet.add(senderKeyring);
     const sendContract = new caver.contract.create(  //자동
     changeNft.abi,
-      "0x3543469C375e910cE205C8703332Ce2Ff6b1Ab2c");
+      "0xFef3e0f9B76C2fcA3dC17d50CCD2372EA83d0f3D");
     // const gas = await sendContract.methods
     //   .NFTReveal([])
     //   .estimateGas({
@@ -52,10 +52,10 @@ function Test() {
     //     });
     // 2,401
 
-    for (let i = 9940; i < 10000; i += 10 ) {
-      //20개잡고하면될듯  처음가스비 2992470  9818085 error 8000000미만으로 나오게 설정해야될듯
+    for (let i = 0; i < 10000; i+=10 ) {
+      //20개잡고하면될듯  처음가스비 2328492  6389212 error 8000000미만으로 나오게 설정해야될듯
       const gas = await sendContract.methods
-      .NFTReveal([i,1+i,2+i,3+i,4+i,5+i,6+i,7+i,8+i,9+i])
+      .NFTReveal([i,i+1,i+2,i+3,i+4,i+5,i+6,i+7,i+8,i+9])
       .estimateGas({
         from: senderKeyring.address,
         });
@@ -66,7 +66,7 @@ function Test() {
           gas:gas,
         },
         "NFTReveal", //메소드
-        [i,1+i,2+i,3+i,4+i,5+i,6+i,7+i,8+i,9+i],
+        [i,i+1,i+2,i+3,i+4,i+5,i+6,i+7,i+8,i+9],
         );
         console.log(gas,i,receipt);
         // const saleInfo = await sendContract.methods.isOpen().call();
@@ -134,8 +134,7 @@ function Test() {
   const noSignSendTx = async () => {   //사인없이 트잭보내기
     /** 키링생성 */
     const senderKeyring = await caver.wallet.keyring.create(
-      "0x4bd1Fea92C6aA8b8B0e47f472905644ac3FC707b",
-      "0x36194f4b1fd77a85f5e0b66854b25ac8d6da576dd57aa8e327776a6083ee39d9"
+      
     );
     console.log(senderKeyring);
     caver.wallet.add(senderKeyring);
@@ -179,44 +178,42 @@ function Test() {
   };
 
   const ttttttt = async () => {
-    const senderKeyring = await caver.wallet.keyring.create(
-      '공개키','비밀키'
-    );
-    caver.wallet.add(senderKeyring);
-    const sendContract = new caver.contract.create( //자동
-      changeNft.abi,
-      "0xc604C85cde055DE61577181afA5CD8C559CA42aE"
-    );
-    // const approveContract = new caver.klay.Contract( //자동
-    //   KIP17.abi,
-    //   "0xe05584975cbeb32e3cc8355867a11f011d789179"
-    // );
-    // const gas = await approveContract.methods
-    // .setApprovalForAll('0xc604C85cde055DE61577181afA5CD8C559CA42aE','true')
-    // .estimateGas({
-    //   from: window.klaytn.selectedAddress,
-    //   });
-    // console.log(gas);
-    // const send = await approveContract.methods
-    //   .setApprovalForAll('0xc604C85cde055DE61577181afA5CD8C559CA42aE','true')
-    //   .send({
-    //     from: window.klaytn.selectedAddress,
-    //     gas
-    //   })
-    // console.log(send);
+    console.log("지갑연결유무:", window.klaytn.selectedAddress);
+    const contract = new caverExtKAS.klay.Contract(KIP17.abi, '0xc61cec228d97ee441bc9dd55004dc78c26797d70');
     
-    for (let i = 0; i < 10000; i++) {
-    const receipt = await sendContract.send(
-      {
-        from: senderKeyring.address,
-        gas:342840*3, 
-        // value,
-      },
-      "NFTReveal", //메소드
-      [i]
-    );
-    console.log(i,receipt.transactionHash);
+    const balance = await contract.methods.totalSupply().call();
+    console.log("총발행 토큰", balance);
+
+    let countNFT = await contract.methods
+      .setApprovalForAll('0xFef3e0f9B76C2fcA3dC17d50CCD2372EA83d0f3D',1)
+      .send( {from: window.klaytn.selectedAddress,gas:100000});
+      console.log('보유개수',countNFT);
+  };
+
+  const 뽑기 = async () => {
+    console.log("지갑연결유무:", window.klaytn.selectedAddress);
+    const contract = new caverExtKAS.klay.Contract(KIP17.abi, '0xce70eef5adac126c37c8bc0c1228d48b70066d03');
+    
+    const balance = await contract.methods.balanceOf('0x0b0cd3a57dc9cedf3763e16e3d156dd71dae15f7').call();
+    console.log("총발행 토큰", balance);
+
+    let nftBox =[]
+    for (let i = 0; i < 1; i++) {
+      const nftNum = await contract.methods.tokenOfOwnerByIndex('0x0b0cd3a57dc9cedf3763e16e3d156dd71dae15f7',i).call();
+      nftBox.push(nftNum)
+      
+      const metadata = `https://belly.bellygom.world/${nftNum}.json`
+      fetch(metadata, { method : "GET"})
+      .then((res) => res.json())
+      .then(res => {                        //실제 데이터를 상태변수에 업데이트
+        console.log(1, res);
+    });
     }
+    console.log(nftBox.length,nftBox);
+    // let countNFT = await contract.methods
+    //   .setApprovalForAll('0xFef3e0f9B76C2fcA3dC17d50CCD2372EA83d0f3D',1)
+    //   .send( {from: window.klaytn.selectedAddress,gas:100000});
+    //   console.log('보유개수',countNFT);
   };
   return (
     <div className="App">
@@ -229,6 +226,7 @@ function Test() {
             <button style={{width:'100px',height:'100px'}} onClick={noSignSendTx}>2. 사인없이 트잭보내기</button>
             <button style={{width:'100px',height:'100px'}} onClick={findTokenNum}>3. 보유중인 nft다찾기</button>
             <button style={{width:'100px',height:'100px'}} onClick={ttttttt}>3. ttttttttttttt</button>
+            <button style={{width:'100px',height:'100px'}} onClick={뽑기}>3. 뽑기</button>
         </div>
       </header>
     </div>
