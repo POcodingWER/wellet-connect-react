@@ -1,6 +1,6 @@
 const fs = require('fs');
 const Caver = require('caver-js');
-const KIP17 = require('./abi/OwnableKIP17.json');
+const KIP17 = require('../src/abi/OwnableKIP17.json');
 let caverExtKAS = new Caver('https://public-node-api.klaytnapi.com/v1/cypress');
 const axios = require('axios');
 
