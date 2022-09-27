@@ -19,7 +19,7 @@ const 뽑기 = async () => {
     let dayTimeStemp = 86400;
     let unixTime = startTime
     let id = 10;
-    let csv =`id,symbol,price,unixTime,source,createdAt,updatedAt\r\n`
+    let csv =`id, symbol,price,unixTime,source,createdAt,updatedAt\r\n`
     for (let i = 1; i < 26; i++) {
       const url = `https://api.coingecko.com/api/v3/coins/favor/history?date=${i}-9-2022`
       console.log(url);
