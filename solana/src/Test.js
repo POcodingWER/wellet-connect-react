@@ -9,7 +9,6 @@ function Test() {
  
   const connectWalletPhantom = async () => {
     const { solana } = window;
-    console.log(window.solana);
     if (solana) {
       const response = await solana.connect();
       console.log('Connected with Public Key:', response.publicKey.toString());
