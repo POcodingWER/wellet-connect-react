@@ -17,6 +17,10 @@ function App() {
 
     setNft(asset);
   };
+  
+  const connectWellet = async () =>{
+    console.log(1);
+  }
 
   return (
     <div className="App">
@@ -39,6 +43,14 @@ function App() {
             />
           </div>
         )}
+        
+        <button
+            style={{ width: "220px", height: "50px" }}
+            onClick={connectWellet}
+          >
+            1. 지갑연결
+          </button>
+          <br />
       </div>
     </div>
   );
