@@ -1,6 +1,6 @@
 import "./App.css";
 import { nftStorage } from "@metaplex-foundation/js-plugin-nft-storage";
-import { mockStorage, keypairIdentity, Metaplex, toBigNumber, bundlrStorage, toMetaplexFileFromBrowser } from "@metaplex-foundation/js";
+import { keypairIdentity, Metaplex, toBigNumber, sol, toDateTime } from "@metaplex-foundation/js";
 import {
   clusterApiUrl,
   Connection,
@@ -386,9 +386,175 @@ function App() {
       .refresh(candyMachine);
       console.log("캔디머시 아이템수정", updatedCandyMachine.items);
   }
-  /** */
+  /** 캔디가드가 무엇인가? */
+  const whatCandyGuard =  async () => {
+    console.log(`
+    Address Gate: 민트를 단일 주소로 제한합니다.
+    Allow List: 지갑 주소 목록을 사용하여 누가 발행할 수 있는지 결정합니다.
+    Bot Tax: 유효하지 않은 거래를 부과하기 위해 구성 가능한 세금입니다.
+    End Date: 조폐국을 종료할 날짜를 결정합니다.
+    Gatekeeper: 보안문자 통합과 같은 게이트웨이 네트워크를 통한 발행을 제한합니다.
+    Mint Limit: 지갑당 Mint 수에 대한 제한을 지정합니다.
+    Nft Burn: NFT를 소각해야 하는 특정 컬렉션의 보유자로 민트를 제한합니다.
+    Nft Gate: 지정된 컬렉션의 소지자에게만 조폐국을 제한합니다.
+    Nft Payment: 지정된 컬렉션의 NFT로 민트의 가격을 설정합니다.
+    Redeemed Amount: 발행된 총 발행량을 기준으로 발행 종료 시점을 결정합니다.
+    Sol Payment: SOL에서 민트의 가격을 설정합니다.
+    Start Date: 박하의 시작 날짜를 결정합니다.
+    Third Party Signer: 거래에 대한 추가 서명자가 필요합니다.
+    Token Burn: 지정된 토큰 소지자로 조폐국을 제한하여 토큰 소각을 요구합니다.
+    Token Gate: 지정된 토큰 소지자에게만 발행을 제한합니다.
+    Token Payment: 토큰 금액으로 조폐국의 가격을 설정합니다.
+    `);
+    metaplex.use(keypairIdentity(payer))
+    // withoutCandyGuard:true 이것만 안넣어주면 디폴드값으로 알아서 가드는 생김
+    const { candyMachine } = await metaplex.candyMachines().create({
+      itemsAvailable: toBigNumber(10),
+      sellerFeeBasisPoints: 333, // 3.33%
+      collection: {
+        address: new PublicKey('FMc5wWNJumx1hdHuJjrU8YnyQwTMKvKGcP7mGurUhPhY'),
+        updateAuthority: metaplex.identity(),
+      },
+      guards: {
+        botTax: { lamports: sol(0.01), lastInstruction: false },  //  봇어쩌고
+        solPayment: { amount: sol(1.5), destination: metaplex.identity().publicKey },  //  대금 지갑주소?
+        startDate: { date: toDateTime("2022-10-18T16:00:00Z") },  //  시작시간
+      },
+    });
+
+    console.log('가드가 있는 캔디머신생성',candyMachine.candyGuard);
+    setCandyMachineAdr(candyMachine);
+  }
+  /** 가드 업데이트 해보기 */
+  const guardUpdate = async () => {
+    metaplex.use(keypairIdentity(payer));
+
+    const candyMachine = await metaplex.candyMachines().findByAddress({
+      address: new PublicKey(candyMachineAdr.address.toBase58()),
+    });
+
+    console.log(
+      "찾은 캔디머신 주소",
+      candyMachine.address.toBase58(),
+      "캔디가드",
+      candyMachine.candyGuard
+    );
+
+    await metaplex.candyMachines().update({
+      candyMachine,
+      guards: {
+        botTax: { lamports: sol(0.08), lastInstruction: false },
+        solPayment: {
+          amount: sol(0.8),
+          destination: metaplex.identity().publicKey,
+        },
+        startDate: { date: toDateTime("2022-10-18T16:00:00Z") },
+      },
+    });
+
+    const updatedCandyMachine = await metaplex
+      .candyMachines()
+      .refresh(candyMachine);
+    console.log(
+      "변경된 캔디머신 가드",
+      updatedCandyMachine.candyGuard.guards
+
+    );
+  };
+  /** 캔디머신따로 가드따로 생성후 합치기 */
+  const candyGuardAccountSwap  = async () => {
+    console.log('loading');
+    metaplex.use(keypairIdentity(payer));
+    const { candyMachine } = await metaplex.candyMachines().create({
+      itemsAvailable: toBigNumber(5000),
+      sellerFeeBasisPoints: 333, // 3.33%
+      collection: {
+        address:  new PublicKey('FMc5wWNJumx1hdHuJjrU8YnyQwTMKvKGcP7mGurUhPhY'),
+        updateAuthority: metaplex.identity(),
+      },
+      withoutCandyGuard: true,  //가드 안쓴다는 명령어
+    });
+    console.log('가드가 생성되었는지 확인해보셈',candyMachine);
+    
+    const { candyGuard } = await metaplex.candyMachines().createCandyGuard({
+      guards: {
+        botTax: { lamports: sol(0.01), lastInstruction: false },
+        solPayment: { amount: sol(1.5), destination: metaplex.identity().publicKey},
+        startDate: { date: toDateTime("2022-10-17T16:00:00Z") },
+      },
+    });
+    console.log('create candyGuard',candyGuard);
+
+    await metaplex.candyMachines().wrapCandyGuard({
+      candyMachine: candyMachine.address,
+      candyGuard: candyGuard.address,
+    });
+    let updatedCandyMachine = await metaplex
+      .candyMachines()
+      .refresh(candyMachine);
+    console.log('캔디머신에 캔디가드 연결',updatedCandyMachine);
+    
+    await metaplex.candyMachines().unwrapCandyGuard({
+      candyMachine: candyMachine.address,
+      candyGuard: candyGuard.address,
+    });
+    updatedCandyMachine = await metaplex
+      .candyMachines()
+      .refresh(candyMachine);
+    console.log('캔디머신에 캔디가드 연결끊음 ',updatedCandyMachine);
+
+
+  }
+  /** 캔디머신 가드 구릅화 */
+  const candyMachineGuardGroup = async () => {
+
+  }
+
   const test = ()=>{
-    console.log(new PublicKey('CvPTw4BVuiNMa7Yc1JJTAt6QLdeGoHyLtpY8Vojajteh'));
+    let candyMachine = {
+      "botTax": {
+          "lamports": {
+              "basisPoints": "04c4b400",
+              "currency": {
+                  "symbol": "SOL",
+                  "decimals": 9
+              }
+          },
+          "lastInstruction": false
+      },
+      "solPayment": {
+          "lamports": "2faf0800",
+          "destination": "Bao3ZumN6trNwe4HU1XMwm4kfXpTKZ56Jw3MYLsUuhiK",
+          "amount": {
+              "basisPoints": "2faf0800",
+              "currency": {
+                  "symbol": "SOL",
+                  "decimals": 9
+              }
+          }
+      },
+      "tokenPayment": null,
+      "startDate": {
+          "date": "634ecd80"
+      },
+      "thirdPartySigner": null,
+      "tokenGate": null,
+      "gatekeeper": null,
+      "endDate": null,
+      "allowList": null,
+      "mintLimit": null,
+      "nftPayment": null,
+      "redeemedAmount": null,
+      "addressGate": null,
+      "nftGate": null,
+      "nftBurn": null,
+      "tokenBurn": null
+  }
+    console.log(
+      sol(candyMachine.botTax.lamports.basisPoints.toString())
+      // candyMachine.baseAddress.toString(),
+      // candyMachine.guards.solPayment.destination.toString(),
+    );
     
   }
   return (
@@ -498,6 +664,35 @@ function App() {
           onClick={insertItemsModify}
         >
           4.캔디머신에 아이템 수정
+        </button>
+        <br />
+        <br />
+        <button
+          style={{ width: "220px", height: "50px" }}
+          onClick={whatCandyGuard}
+        >
+          1.가드가 있는 캔디머신 만들기
+        </button>
+        <br />
+        <button
+          style={{ width: "220px", height: "50px" }}
+          onClick={guardUpdate}
+        >
+          2.가드가 정보 업데이트 
+        </button>
+        <br />
+        <button
+          style={{ width: "220px", height: "50px" }}
+          onClick={candyGuardAccountSwap}
+        >
+          3.캔디머신 생성 가드생성 수동으로 연결분리하기 
+        </button>
+        <br />
+        <button
+          style={{ width: "220px", height: "50px" }}
+          onClick={candyMachineGuardGroup}
+        >
+          4.캔디머신 가드 구룹으로 나누기 
         </button>
         <br />
         <button
