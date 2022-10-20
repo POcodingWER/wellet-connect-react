@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@metaplex-foundation/js": "0.17.2",
+    "@metaplex-foundation/js-plugin-nft-storage": "^0.1.1",
     "@solana/web3.js": "^1.63.1",
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^13.1.1",
