@@ -1,6 +1,14 @@
 import "./App.css";
 import { nftStorage } from "@metaplex-foundation/js-plugin-nft-storage";
-import { keypairIdentity, Metaplex, toBigNumber, sol, toDateTime } from "@metaplex-foundation/js";
+import {
+  keypairIdentity,
+  Metaplex,
+  toBigNumber,
+  sol,
+  toDateTime,
+  getMerkleRoot,
+  getMerkleProof,
+} from "@metaplex-foundation/js";
 import {
   clusterApiUrl,
   Connection,
@@ -20,7 +28,8 @@ function App() {
   );
   const [nft, setNft] = useState(null);
   const [payer, setpayer] = useState("");
-  const [candyMachineAdr, setCandyMachineAdr] = useState('');
+  const [candyMachineAdr, setCandyMachineAdr] = useState("");
+  const [mintingAdr, setMintingAdr] = useState("FVoahsR3Z6GK2cPiPXBWxZD5ZLFo5MfdpLJB2BGZnKej");
 
   const fetchNft = async () => {
     const asset = await metaplex
@@ -28,6 +37,7 @@ function App() {
       .findByMint({ mintAddress: new PublicKey(address) });
     setNft(asset);
   };
+  /*------------------------1-----------------------------*/
   /** 지갑 연결 */
   const connectWellet = async () => {
     const { solana } = window;
@@ -70,7 +80,7 @@ function App() {
 
     const { nft: collectionNft } = await metaplex.nfts().create({
       isCollection: true,
-      name: 'uuuuuuuuuuuu',
+      name: "uuuuuuuuuuuu",
       uri: "https://arweave.net/E7ZchKO6QgNKMBtapymZGQDXdm7b1_swQ0AyjmBB_DA", //json 형식 메타데이터
       sellerFeeBasisPoints: 0,
     });
@@ -79,11 +89,10 @@ function App() {
       `민터주소: ${collectionNft.address.toBase58()}\nmetadataAddress: ${collectionNft.metadataAddress.toBase58()}\nupdateAuthorityAddress: ${collectionNft.updateAuthorityAddress.toBase58()}`,
       collectionNft
     );
-  
-    
+
     const { candyMachine } = await metaplex.candyMachines().create({
       sellerFeeBasisPoints: 333, // 3.33%
-      itemsAvailable: toBigNumber(6),  //몇개 발행
+      itemsAvailable: toBigNumber(6), //몇개 발행
       collection: {
         address: collectionNft.address,
         updateAuthority: metaplex.identity(),
@@ -104,7 +113,7 @@ function App() {
   };
   /** 캔디머신 가져오고 권한업데이트 */
   const getCandyMAandUpdateAuthority = async () => {
-    metaplex.use(keypairIdentity(payer))
+    metaplex.use(keypairIdentity(payer));
 
     const candyMachine = await metaplex.candyMachines().findByAddress({
       address: new PublicKey(candyMachineAdr.address.toBase58()),
@@ -124,7 +133,7 @@ function App() {
       authority: payer,
       newAuthority: newAuthority.publicKey,
     });
-    console.log("변경 tx 주소",tx);
+    console.log("변경 tx 주소", tx);
 
     const updatedCandyMachine = await metaplex
       .candyMachines()
@@ -133,7 +142,7 @@ function App() {
   };
   /** NFT데이터 업데이트 */
   const NFTdataUpdate = async () => {
-    metaplex.use(keypairIdentity(payer))
+    metaplex.use(keypairIdentity(payer));
 
     const candyMachine = await metaplex.candyMachines().findByAddress({
       address: new PublicKey(candyMachineAdr.address.toBase58()),
@@ -144,26 +153,29 @@ function App() {
       "캔디머신 권한자",
       candyMachine.authorityAddress.toString()
     );
-    
+
     const newCreator = Keypair.generate();
     console.log("2차수수료 변경할 Account", newCreator.publicKey.toBase58());
 
     const tx = await metaplex.candyMachines().update({
       candyMachine,
-      symbol: 'NEW',
+      symbol: "NEW",
       sellerFeeBasisPoints: 100,
       creators: [{ address: newCreator.publicKey, share: 100 }],
     });
-    console.log("변경 tx 주소",tx);
+    console.log("변경 tx 주소", tx);
 
     const updatedCandyMachine = await metaplex
       .candyMachines()
       .refresh(candyMachine);
-    console.log("변경된 2차수수료 받을 Account", updatedCandyMachine.creators[0].address.toBase58());
-  }
+    console.log(
+      "변경된 2차수수료 받을 Account",
+      updatedCandyMachine.creators[0].address.toBase58()
+    );
+  };
   /** 민터(컬랙션) 변경*/
   const candyMachineChangeMinter = async () => {
-    metaplex.use(keypairIdentity(payer))
+    metaplex.use(keypairIdentity(payer));
 
     const candyMachine = await metaplex.candyMachines().findByAddress({
       address: new PublicKey(candyMachineAdr.address.toBase58()),
@@ -174,17 +186,17 @@ function App() {
       "캔디머신 권한자",
       candyMachine.authorityAddress.toString(),
       "컬랙션주소",
-      candyMachine.collectionMintAddress.toBase58(),
+      candyMachine.collectionMintAddress.toBase58()
     );
-    
+
     const tx = await metaplex.candyMachines().update({
       candyMachine,
       collection: {
-        address:new PublicKey('3i7izYHug4t34mFWqXyV74qmZiM2XkmnXvHNJvE5FmzY'), //바꿀민터
+        address: new PublicKey("3i7izYHug4t34mFWqXyV74qmZiM2XkmnXvHNJvE5FmzY"), //바꿀민터
         updateAuthority: metaplex.identity(), //업데이트 권한 확인인가봄?
       },
     });
-    console.log("변경 tx 주소",tx);
+    console.log("변경 tx 주소", tx);
 
     const updatedCandyMachine = await metaplex
       .candyMachines()
@@ -193,11 +205,10 @@ function App() {
       "변경된 컬랙션 주소",
       updatedCandyMachine.collectionMintAddress.toString()
     );
-
-  }
+  };
   /** 아이템 목록 설정 */
   const itemUpdate = async () => {
-    metaplex.use(keypairIdentity(payer))
+    metaplex.use(keypairIdentity(payer));
 
     const candyMachine = await metaplex.candyMachines().findByAddress({
       address: new PublicKey(candyMachineAdr.address.toBase58()),
@@ -206,30 +217,30 @@ function App() {
       "찾은 캔디머신 주소",
       candyMachine.address.toBase58(),
       "캔디머신 권한자",
-      candyMachine.authorityAddress.toString(),
+      candyMachine.authorityAddress.toString()
     );
 
     const tx = await metaplex.candyMachines().update({
       candyMachine,
       itemSettings: {
-        type: "configLines",        //configLines or hidden
-        prefixName: "My New NFT #$ID+1$",  
+        type: "configLines", //configLines or hidden
+        prefixName: "My New NFT #$ID+1$",
         nameLength: 0,
         prefixUri: "https://arweave.net/",
         uriLength: 43,
-        isSequential: true,   //nft를 순차적으로 생성할지:true 램덤하게 생성할지:false
+        isSequential: true, //nft를 순차적으로 생성할지:true 램덤하게 생성할지:false
       },
     });
 
-    console.log("변경 tx 주소",tx);
+    console.log("변경 tx 주소", tx);
     const updatedCandyMachine = await metaplex
       .candyMachines()
       .refresh(candyMachine);
     console.log("변경된 컬랙션 주소", updatedCandyMachine);
-  }
+  };
   /** 캔디머신 삭제하기 */
   const candyMachineDelete = async () => {
-    metaplex.use(keypairIdentity(payer))
+    metaplex.use(keypairIdentity(payer));
 
     const candyMachine = await metaplex.candyMachines().findByAddress({
       address: new PublicKey(candyMachineAdr.address.toBase58()),
@@ -238,7 +249,7 @@ function App() {
       "찾은 캔디머신 주소",
       candyMachine.address.toBase58(),
       "캔디머신 가드 주소",
-      candyMachine.candyGuard.address.toString(),
+      candyMachine.candyGuard.address.toString()
     );
     // 캔디머신만 지워짐
     // await metaplex.candyMachines().delete({
@@ -250,18 +261,21 @@ function App() {
       candyMachine: candyMachine.address,
       candyGuard: candyMachine.candyGuard.address,
     });
-    setCandyMachineAdr('')
-    console.log('완료');
-  }
+    setCandyMachineAdr("");
+    console.log("완료");
+  };
+  /*-------------------------2----------------------------*/
   /** json meta data upload */
   const metadataUpload = async () => {
-    console.log('****머가 문제인지 업로드안됨, 근데 우리는 메타데이터 다만들고 올릴꺼니깐 2번부터 진행 나중에 1번 해보자');
+    console.log(
+      "****머가 문제인지 업로드안됨, 근데 우리는 메타데이터 다만들고 올릴꺼니깐 2번부터 진행 나중에 1번 해보자"
+    );
     //metaplex  기초
     //https://user-images.githubusercontent.com/3642397/167716670-16c6ec5e-76ba-4c15-9dfc-7790d90099dd.png
-    console.log('default',metaplex); 
-    console.log('default',metaplex.identity());
+    console.log("default", metaplex);
+    console.log("default", metaplex.identity());
     metaplex.use(keypairIdentity(payer)).use(nftStorage());
-    console.log('키페어세팅후',metaplex.identity());
+    console.log("키페어세팅후", metaplex.identity());
     console.log(metaplex);
     const { uri } = await metaplex.nfts().uploadMetadata({
       name: "My NFT #1",
@@ -271,7 +285,7 @@ function App() {
       // external_url:'https://explorer.solana.com/address/GLeayYXBjWEvb1T6GDrp2SJFkKTVZGxCJ77Hv5qSJxWq?cluster=devnet',
     });
     console.log(uri);
-  }
+  };
   /** 캔디머신에 이름과 uri 넣기*/
   const CMinsertItems = async () => {
     metaplex.use(keypairIdentity(payer));
@@ -296,22 +310,20 @@ function App() {
     let updatedCandyMachine = await metaplex
       .candyMachines()
       .refresh(candyMachine);
-    console.log('insertItems 진행중',updatedCandyMachine.items);
+    console.log("insertItems 진행중", updatedCandyMachine.items);
 
     //데이터 크기가 커서 다안들어가면 인덱스 사용해서 넣어주면됨 설정 수량을 초과할수는없다.
     await metaplex.candyMachines().insertItems({
       candyMachine,
-      index:3,
+      index: 3,
       items: [
         { name: "bellygom #4", uri: "https://belly.bellygom.world/4.json" },
         { name: "bellygom #5", uri: "https://belly.bellygom.world/5.json" },
         { name: "bellygom #6", uri: "https://belly.bellygom.world/6.json" },
       ],
     });
-     updatedCandyMachine = await metaplex
-    .candyMachines()
-    .refresh(candyMachine);
-    console.log('insertItems 완료',updatedCandyMachine.items);
+    updatedCandyMachine = await metaplex.candyMachines().refresh(candyMachine);
+    console.log("insertItems 완료", updatedCandyMachine.items);
   };
   /** 아이템 이름 uri 설정되어있을때 항목삽입법 */
   const itemSettingsCMinsertItems = async () => {
@@ -358,13 +370,13 @@ function App() {
   };
   /** 아이템 인설트후 수정 방법*/
   const insertItemsModify = async () => {
-    metaplex.use(keypairIdentity(payer))
+    metaplex.use(keypairIdentity(payer));
 
     const candyMachine = await metaplex.candyMachines().findByAddress({
       address: new PublicKey(candyMachineAdr.address.toBase58()),
     });
-    if (candyMachine.itemsAvailable.toString()==candyMachine.items.length) {
-      return alert('최대발행수까지 세팅되면 수정불가능');
+    if (candyMachine.itemsAvailable.toString() == candyMachine.items.length) {
+      return alert("최대발행수까지 세팅되면 수정불가능");
     }
     console.log(
       "찾은 캔디머신 주소",
@@ -372,22 +384,21 @@ function App() {
       candyMachine.itemSettings,
       candyMachine.items
     );
-    
+
     await metaplex.candyMachines().insertItems({
       candyMachine,
       index: 1,
-      items: [
-        { name: "d", uri: "d.json" }
-      ],
+      items: [{ name: "d", uri: "d.json" }],
     });
 
     let updatedCandyMachine = await metaplex
       .candyMachines()
       .refresh(candyMachine);
-      console.log("캔디머시 아이템수정", updatedCandyMachine.items);
-  }
-  /** 캔디가드가 무엇인가? */
-  const whatCandyGuard =  async () => {
+    console.log("캔디머시 아이템수정", updatedCandyMachine.items);
+  };
+  /*-------------------------3----------------------------*/
+  /** 캔디가드가 무엇인가? 가드생성 */
+  const whatCandyGuard = async () => {
     console.log(`
     Address Gate: 민트를 단일 주소로 제한합니다.
     Allow List: 지갑 주소 목록을 사용하여 누가 발행할 수 있는지 결정합니다.
@@ -406,25 +417,28 @@ function App() {
     Token Gate: 지정된 토큰 소지자에게만 발행을 제한합니다.
     Token Payment: 토큰 금액으로 조폐국의 가격을 설정합니다.
     `);
-    metaplex.use(keypairIdentity(payer))
+    metaplex.use(keypairIdentity(payer));
     // withoutCandyGuard:true 이것만 안넣어주면 디폴드값으로 알아서 가드는 생김
     const { candyMachine } = await metaplex.candyMachines().create({
       itemsAvailable: toBigNumber(10),
       sellerFeeBasisPoints: 333, // 3.33%
       collection: {
-        address: new PublicKey('FMc5wWNJumx1hdHuJjrU8YnyQwTMKvKGcP7mGurUhPhY'),
+        address: new PublicKey("FMc5wWNJumx1hdHuJjrU8YnyQwTMKvKGcP7mGurUhPhY"),
         updateAuthority: metaplex.identity(),
       },
       guards: {
-        botTax: { lamports: sol(0.01), lastInstruction: false },  //  봇어쩌고
-        solPayment: { amount: sol(1.5), destination: metaplex.identity().publicKey },  //  대금 지갑주소?
-        startDate: { date: toDateTime("2022-10-18T16:00:00Z") },  //  시작시간
+        botTax: { lamports: sol(0.01), lastInstruction: false }, //  봇어쩌고
+        solPayment: {
+          amount: sol(1.5),
+          destination: metaplex.identity().publicKey,
+        }, //  대금 지갑주소?
+        startDate: { date: toDateTime("2022-10-18T16:00:00Z") }, //  시작시간
       },
     });
 
-    console.log('가드가 있는 캔디머신생성',candyMachine.candyGuard);
+    console.log("가드가 있는 캔디머신생성", candyMachine.candyGuard);
     setCandyMachineAdr(candyMachine);
-  }
+  };
   /** 가드 업데이트 해보기 */
   const guardUpdate = async () => {
     metaplex.use(keypairIdentity(payer));
@@ -455,35 +469,34 @@ function App() {
     const updatedCandyMachine = await metaplex
       .candyMachines()
       .refresh(candyMachine);
-    console.log(
-      "변경된 캔디머신 가드",
-      updatedCandyMachine.candyGuard.guards
-
-    );
+    console.log("변경된 캔디머신 가드", updatedCandyMachine.candyGuard.guards);
   };
-  /** 캔디머신따로 가드따로 생성후 합치기 */
-  const candyGuardAccountSwap  = async () => {
-    console.log('loading');
+  /** 캔디머신따로 가드따로 생성후 합치기 분리하기 */
+  const candyGuardAccountSwap = async () => {
+    console.log("loading");
     metaplex.use(keypairIdentity(payer));
     const { candyMachine } = await metaplex.candyMachines().create({
-      itemsAvailable: toBigNumber(5000),
+      itemsAvailable: toBigNumber(3),
       sellerFeeBasisPoints: 333, // 3.33%
       collection: {
-        address:  new PublicKey('FMc5wWNJumx1hdHuJjrU8YnyQwTMKvKGcP7mGurUhPhY'),
+        address: new PublicKey("FMc5wWNJumx1hdHuJjrU8YnyQwTMKvKGcP7mGurUhPhY"),
         updateAuthority: metaplex.identity(),
       },
-      withoutCandyGuard: true,  //가드 안쓴다는 명령어
+      withoutCandyGuard: true, //가드 안쓴다는 명령어
     });
-    console.log('가드가 생성되었는지 확인해보셈',candyMachine);
-    
+    console.log("가드가 생성되었는지 확인해보셈", candyMachine);
+
     const { candyGuard } = await metaplex.candyMachines().createCandyGuard({
       guards: {
         botTax: { lamports: sol(0.01), lastInstruction: false },
-        solPayment: { amount: sol(1.5), destination: metaplex.identity().publicKey},
+        solPayment: {
+          amount: sol(1.5),
+          destination: metaplex.identity().publicKey,
+        },
         startDate: { date: toDateTime("2022-10-17T16:00:00Z") },
       },
     });
-    console.log('create candyGuard',candyGuard);
+    console.log("create candyGuard", candyGuard);
 
     await metaplex.candyMachines().wrapCandyGuard({
       candyMachine: candyMachine.address,
@@ -492,71 +505,336 @@ function App() {
     let updatedCandyMachine = await metaplex
       .candyMachines()
       .refresh(candyMachine);
-    console.log('캔디머신에 캔디가드 연결',updatedCandyMachine);
-    
+    console.log("캔디머신에 캔디가드 연결", updatedCandyMachine);
+
     await metaplex.candyMachines().unwrapCandyGuard({
       candyMachine: candyMachine.address,
       candyGuard: candyGuard.address,
     });
-    updatedCandyMachine = await metaplex
+    updatedCandyMachine = await metaplex.candyMachines().refresh(candyMachine);
+    console.log("캔디머신에 캔디가드 연결끊음 ", updatedCandyMachine);
+  };
+  /** 캔디머신 가드 그룹으로 나누기 */
+  const candyMachineGuardGroup = async () => {
+    console.log("loading");
+    metaplex.use(keypairIdentity(payer));
+
+    const { candyMachine } = await metaplex.candyMachines().create({
+      itemsAvailable: toBigNumber(10),
+      sellerFeeBasisPoints: 333, // 3.33%
+      collection: {
+        address: new PublicKey("FMc5wWNJumx1hdHuJjrU8YnyQwTMKvKGcP7mGurUhPhY"),
+        updateAuthority: metaplex.identity(),
+      },
+      groups: [
+        {
+          label: "early",
+          guards: {
+            solPayment: {
+              amount: sol(1),
+              destination: metaplex.identity().publicKey,
+            },
+            startDate: { date: toDateTime("2022-10-18T16:00:00Z") },
+            endDate: { date: toDateTime("2022-10-18T17:00:00Z") },
+            botTax: { lamports: sol(0.001), lastInstruction: true },
+          },
+        },
+        {
+          label: "late",
+          guards: {
+            solPayment: {
+              amount: sol(2),
+              destination: metaplex.identity().publicKey,
+            },
+            startDate: { date: toDateTime("2022-10-18T17:00:00Z") },
+            botTax: { lamports: sol(0.001), lastInstruction: true },
+          },
+        },
+      ],
+    });
+    console.log("가드가 그룹 확인해보셈", candyMachine.candyGuard.groups);
+
+    await metaplex.candyMachines().update({
+      candyMachine,
+      groups: [
+        {
+          label: "early",
+          guards: {
+            solPayment: {
+              amount: sol(1),
+              destination: metaplex.identity().publicKey,
+            },
+            startDate: { date: toDateTime("2022-10-18T16:00:00Z") },
+            endDate: { date: toDateTime("2022-10-18T17:00:00Z") },
+            botTax: { lamports: sol(0.001), lastInstruction: true },
+          },
+        },
+        {
+          label: "late",
+          guards: {
+            solPayment: {
+              amount: sol(3),
+              destination: metaplex.identity().publicKey,
+            },
+            startDate: { date: toDateTime("2022-10-18T17:00:00Z") },
+            botTax: { lamports: sol(0.001), lastInstruction: true },
+          },
+        },
+      ],
+    });
+    let updatedCandyMachine = await metaplex
       .candyMachines()
       .refresh(candyMachine);
-    console.log('캔디머신에 캔디가드 연결끊음 ',updatedCandyMachine);
-
-
-  }
-  /** 캔디머신 가드 구릅화 */
-  const candyMachineGuardGroup = async () => {
-
-  }
-
-  const test = ()=>{
-    let candyMachine = {
-      "botTax": {
-          "lamports": {
-              "basisPoints": "04c4b400",
-              "currency": {
-                  "symbol": "SOL",
-                  "decimals": 9
-              }
-          },
-          "lastInstruction": false
-      },
-      "solPayment": {
-          "lamports": "2faf0800",
-          "destination": "Bao3ZumN6trNwe4HU1XMwm4kfXpTKZ56Jw3MYLsUuhiK",
-          "amount": {
-              "basisPoints": "2faf0800",
-              "currency": {
-                  "symbol": "SOL",
-                  "decimals": 9
-              }
-          }
-      },
-      "tokenPayment": null,
-      "startDate": {
-          "date": "634ecd80"
-      },
-      "thirdPartySigner": null,
-      "tokenGate": null,
-      "gatekeeper": null,
-      "endDate": null,
-      "allowList": null,
-      "mintLimit": null,
-      "nftPayment": null,
-      "redeemedAmount": null,
-      "addressGate": null,
-      "nftGate": null,
-      "nftBurn": null,
-      "tokenBurn": null
-  }
     console.log(
-      sol(candyMachine.botTax.lamports.basisPoints.toString())
-      // candyMachine.baseAddress.toString(),
-      // candyMachine.guards.solPayment.destination.toString(),
+      "가드가 업데이트 완료 그룹 확인해보셈",
+      updatedCandyMachine.candyGuard.groups
     );
+  };
+  /** 위에 그룹 중복되는거 밖으로뺄수있음*/
+  const candyGuardGroupRepeatMerge = async () => {
+    console.log("loading");
+    metaplex.use(keypairIdentity(payer));
+
+    const { candyMachine } = await metaplex.candyMachines().create({
+      itemsAvailable: toBigNumber(10),
+      sellerFeeBasisPoints: 333, // 3.33%
+      collection: {
+        address: new PublicKey("FMc5wWNJumx1hdHuJjrU8YnyQwTMKvKGcP7mGurUhPhY"),
+        updateAuthority: metaplex.identity(),
+      },
+      guards: {
+        botTax: { lamports: sol(0.001), lastInstruction: true },
+      },
+      groups: [
+        {
+          label: "early",
+          guards: {
+            solPayment: {
+              amount: sol(1),
+              destination: metaplex.identity().publicKey,
+            },
+            startDate: { date: toDateTime("2022-10-18T16:00:00Z") },
+            endDate: { date: toDateTime("2022-10-18T17:00:00Z") },
+          },
+        },
+        {
+          label: "late",
+          guards: {
+            solPayment: {
+              amount: sol(2),
+              destination: metaplex.identity().publicKey,
+            },
+            startDate: { date: toDateTime("2022-10-18T17:00:00Z") },
+          },
+        },
+      ],
+    });
+    console.log("중복되는가드합쳤음 그룹 확인해보셈", candyMachine);
+  };
+  /**병렬 가능 화리랑 퍼블같이 판매가능하다는뜻 */
+  const candyGuardParallelGroups = async () => {
+    console.log(
+      "미완성 눈으로만보셈, 병렬로 열려서 동시에 2그룹을 실행할수도잇다"
+    );
+    metaplex.use(keypairIdentity(payer));
+
+    const { candyMachine } = await metaplex.candyMachines().create({
+      itemsAvailable: toBigNumber(10),
+      sellerFeeBasisPoints: 333, // 3.33%
+      collection: {
+        address: new PublicKey("FMc5wWNJumx1hdHuJjrU8YnyQwTMKvKGcP7mGurUhPhY"),
+        updateAuthority: metaplex.identity(),
+      },
+      guards: {
+        botTax: { lamports: sol(0.001), lastInstruction: true },
+      },
+      groups: [
+        {
+          label: "WL",
+          guards: {
+            solPayment: {
+              amount: sol(1),
+              destination: metaplex.identity().publicKey,
+            },
+            // nftGate: { requiredCollection: innocentBirdCollectionNft.address }, //nft 가지고있는 유저망 통과
+          },
+        },
+        {
+          label: "public",
+          guards: {
+            solPayment: {
+              amount: sol(2),
+              destination: metaplex.identity().publicKey,
+            },
+          },
+        },
+      ],
+    });
+    console.log("중복되는가드합쳤음 그룹 확인해보셈", candyMachine);
+  };
+  /** allowList */
+  const allowListCandymachine = async () => {
+    metaplex.use(keypairIdentity(payer));
+    console.log("지금 안됨ㅜㅜ ");
+    const allowList = [
+      "GjwcWFQYzemBtpUoN5fMAP2FZviTtMRWCmrppGuTthJS",
+      "2vjCrmEFiN9CLLhiqy8u1JPh48av8Zpzp3kNkdTtirYG",
+      "AT8nPwujHAD14cLojTcB1qdBzA1VXnT6LVGuUd6Y73Cy",
+    ];
+    let dd = getMerkleProof(
+      allowList,
+      "GjwcWFQYzemBtpUoN5fMAP2FZviTtMRWCmrppGuTthJS"
+    );
+
+    console.log(dd);
+    console.log(getMerkleRoot(allowList));
+    console.log("allowList", allowList);
+
+    const { candyMachine } = await metaplex.candyMachines().create({
+      itemsAvailable: toBigNumber(10),
+      sellerFeeBasisPoints: 333, // 3.33%
+      collection: {
+        address: new PublicKey("FMc5wWNJumx1hdHuJjrU8YnyQwTMKvKGcP7mGurUhPhY"),
+        updateAuthority: metaplex.identity(),
+      },
+      guards: {
+        allowList: { merkleRoot: getMerkleRoot(allowList) },
+      },
+    });
+    console.log(candyMachine);
+  };
+  /*---------------------------------------------*/
+  /** 민팅전  마지막세팅*/
+  const candymachineItemFinalSeting = async () => {
+    metaplex.use(keypairIdentity(payer));
+    console.log('loading');
+    const { candyMachine } = await metaplex.candyMachines().create({
+      sellerFeeBasisPoints: 333, // 3.33%
+      itemsAvailable: toBigNumber(6), //몇개 발행
+      collection: {
+        address: new PublicKey("FMc5wWNJumx1hdHuJjrU8YnyQwTMKvKGcP7mGurUhPhY"),
+        updateAuthority: metaplex.identity(),
+      },
+      itemSettings: {
+        type: "configLines",
+        prefixName: "belly gom #",
+        nameLength: 1,
+        prefixUri: "https://belly.bellygom.world/",
+        uriLength: 6,
+        isSequential: true,
+      },
+      guards: {
+        botTax: { lamports: sol(0.01), lastInstruction: false }, //  봇어쩌고
+      },
+      groups: [
+        {
+          label: "early",
+          guards: {
+            solPayment: {
+              amount: sol(0.1),
+              destination: metaplex.identity().publicKey,
+            },
+            startDate: { date: toDateTime("2022-10-18T16:00:00Z") },
+            endDate: { date: toDateTime("2022-10-18T17:00:00Z") },
+          },
+        },
+        {
+          label: "late",
+          guards: {
+            solPayment: {
+              amount: sol(0.5),
+              destination: metaplex.identity().publicKey,
+            },
+            startDate: { date: toDateTime("2022-10-18T17:00:00Z") },
+          },
+        },
+      ],
+    });
+
+    console.log(
+      "만든 캔디머신 주소",
+      candyMachine.address.toBase58(),
+      candyMachine
+    );
+
+    await metaplex.candyMachines().insertItems({
+      candyMachine,
+      items: [
+        { name: "1", uri: "1.json" },
+        { name: "2", uri: "2.json" },
+        { name: "3", uri: "3.json" },
+        { name: "4", uri: "4.json" },
+        { name: "5", uri: "5.json" },
+        { name: "6", uri: "6.json" },
+      ],
+    });
+    let updatedCandyMachine = await metaplex
+      .candyMachines()
+      .refresh(candyMachine);
+    console.log("캔디머시 이템인서트완료 ", updatedCandyMachine);
+    setMintingAdr(updatedCandyMachine)
+  };
+  /** minting start */
+  const mintingstart = async () => {
+    metaplex.use(keypairIdentity(payer));
+    const candyMachine = await metaplex.candyMachines().findByAddress({
+      address: new PublicKey("471qmaiF6TLhUT1ExPkz6xwpPAdYzWXJCjgnpgzQa7b7"),
+    });
     
+    console.log(
+      "찾은 캔디머신 주소",
+      candyMachine.address.toBase58(),
+      candyMachine,
+      candyMachine.mintAuthorityAddress
+    );
+
+    // await metaplex.candyMachines().insertItems({
+    //   candyMachine,
+    //   items: [
+    //     { name: "bellygom #1", uri: "https://belly.bellygom.world/1.json" },
+    //     { name: "bellygom #2", uri: "https://belly.bellygom.world/2.json" },
+    //     { name: "bellygom #3", uri: "https://belly.bellygom.world/3.json" },
+    //   ],
+    // });
+    // console.log('item insert');
+    
+    const collectionUpdateAuthority = metaplex.identity().publicKey;
+    //내생각에 collectionUpdateAuthority 계정을통해서 컬랙션이랑 캔디머신이 연결되어있어서그런거같음 그래서 Authority 나눠서 생성해야될듯 
+    const { nft } = await metaplex.candyMachines().mint({
+      candyMachine,
+      collectionUpdateAuthority,
+      owner:new PublicKey('3g4cE28FuqYq45TmkdatMogdu3Ronq7HHnxYzhrSCJ4f')
+    });
+
+    console.log("민팅완료", nft);
+  };
+  /** 가드통해서 민팅  */
+  const mintingWhiteGuard = async () => {
+    metaplex.use(keypairIdentity(payer));
+    const candyMachine = await metaplex.candyMachines().findByAddress({
+      address: new PublicKey(mintingAdr.address.toBase58()),
+    });
+    console.log(
+      "찾은 캔디머신 주소",
+      candyMachine.address.toBase58(),
+      candyMachine
+    );
+    // const { nft } = await metaplex.candyMachines().mint({
+    //   candyMachine,
+    //   collectionUpdateAuthority,
+    //   settings: {
+    //     thirdPartySigner: { signer: thirdPartySigner },
+    //   },
+    // });
+    console.log(nft,);
   }
+
+  const test = () => {
+    
+    console.log(
+      "4gqhY7SiBec7ZG7x6cLrxzTc4PxJraZ9ozKcMobYYZdX"
+    );
+  };
   return (
     <div className="App">
       <div className="container">
@@ -578,7 +856,7 @@ function App() {
             />
           </div>
         )}
-
+        <h3>해야될일: 2-1메타데이터 업로드, 3-7allowList추가안됨 </h3>
         <button
           style={{ width: "220px", height: "50px" }}
           onClick={connectWellet}
@@ -623,10 +901,7 @@ function App() {
           5.캔디머신 찾은후 민터(컬랙션) 업데이트
         </button>
         <br />
-        <button
-          style={{ width: "220px", height: "50px" }}
-          onClick={itemUpdate}
-        >
+        <button style={{ width: "220px", height: "50px" }} onClick={itemUpdate}>
           6.캔디머신 찾은후 아이템 업데이트
         </button>
         <br />
@@ -642,7 +917,7 @@ function App() {
           style={{ width: "220px", height: "50px" }}
           onClick={metadataUpload}
         >
-          1.메타데이터 업로드 지금안됨 나중에해보자 
+          1.메타데이터 업로드 지금안됨 나중에해보자
         </button>
         <br />
         <button
@@ -678,27 +953,67 @@ function App() {
           style={{ width: "220px", height: "50px" }}
           onClick={guardUpdate}
         >
-          2.가드가 정보 업데이트 
+          2.가드가 정보 업데이트
         </button>
         <br />
         <button
           style={{ width: "220px", height: "50px" }}
           onClick={candyGuardAccountSwap}
         >
-          3.캔디머신 생성 가드생성 수동으로 연결분리하기 
+          3.캔디머신 생성 가드생성 수동으로 연결분리하기
         </button>
         <br />
         <button
           style={{ width: "220px", height: "50px" }}
           onClick={candyMachineGuardGroup}
         >
-          4.캔디머신 가드 구룹으로 나누기 
+          4.캔디머신 가드 구룹으로 나누기
         </button>
         <br />
         <button
           style={{ width: "220px", height: "50px" }}
-          onClick={test}
+          onClick={candyGuardGroupRepeatMerge}
         >
+          5.위에 그룹 나눈거 중복되는거를 보기좋게 합치기
+        </button>
+        <br />
+        <button
+          style={{ width: "220px", height: "50px" }}
+          onClick={candyGuardParallelGroups}
+        >
+          6.그룹을 사용하여 병열처럼 2개를 동시에 오픈할수도있다 (wl,public)
+        </button>
+        <br />
+        <button
+          style={{ width: "220px", height: "50px" }}
+          onClick={allowListCandymachine}
+        >
+          7.allowList가 있는 캔디머신
+        </button>
+        <br />
+        <br />
+        <button
+          style={{ width: "220px", height: "50px" }}
+          onClick={candymachineItemFinalSeting}
+        >
+          1.민팅할수있는 캔디머신 만들기
+        </button>
+        <br />
+        <button
+          style={{ width: "220px", height: "50px" }}
+          onClick={mintingstart}
+        >
+          2.가드 없을때 민팅
+        </button>
+        <br />
+        <button
+          style={{ width: "220px", height: "50px" }}
+          onClick={mintingWhiteGuard}
+        >
+          2.가드사용할때 민팅
+        </button>
+        <br />
+        <button style={{ width: "220px", height: "50px" }} onClick={test}>
           tttttttttttttt
         </button>
         <br />
