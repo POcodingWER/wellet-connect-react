@@ -1,5 +1,5 @@
 import "./App.css";
-import { nftStorage } from "@metaplex-foundation/js-plugin-nft-storage";
+import { nftStorage, } from "@metaplex-foundation/js-plugin-nft-storage";
 import {
   keypairIdentity,
   Metaplex,
@@ -8,6 +8,7 @@ import {
   toDateTime,
   getMerkleRoot,
   getMerkleProof,
+  findMetadataPda
 } from "@metaplex-foundation/js";
 import {
   clusterApiUrl,
@@ -33,15 +34,29 @@ import {
   getAssociatedTokenAddress,
   getAccount,
   createMintToCheckedInstruction,
-  createTransferCheckedInstruction
+  createTransferCheckedInstruction,
 } from "@solana/spl-token";
-import { useState } from "react";
+
+import { useState,useEffect } from "react";
 import * as bs58 from "bs58";
 
 const connection = new Connection(clusterApiUrl("devnet"));
 let metaplex = Metaplex.make(connection);
+const getProvider = () => {
+  if ("phantom" in window) {
+    const provider = window.phantom?.solana;
+
+    if (provider?.isPhantom) {
+      return provider;
+    }
+  }
+  window.open("https://phantom.app/", "_blank");
+};
+
+
 
 function App() {
+  const provider = getProvider();
   const [address, setAddress] = useState(
     "32WsxRK1vYia8Bk1WfDaoKdtdmVJbYFCZuh6Q58yhHPr"
   );
@@ -49,22 +64,58 @@ function App() {
   const [payer, setpayer] = useState("");
   const [candyMachineAdr, setCandyMachineAdr] = useState("");
   const [mintingAdr, setMintingAdr] = useState("FVoahsR3Z6GK2cPiPXBWxZD5ZLFo5MfdpLJB2BGZnKej");
-
   const fetchNft = async () => {
     const asset = await metaplex
       .nfts()
       .findByMint({ mintAddress: new PublicKey(address) });
     setNft(asset);
   };
+  
   /*------------------------1-----------------------------*/
+  useEffect(() => {
+    // Will either automatically connect to Phantom, or do nothing.
+    provider
+      .connect({ onlyIfTrusted: true })
+      .then(({ publicKey }) => {
+        console.log('자동연결',publicKey.toBase58());
+        // Handle successful eager connection
+      })
+      .catch(() => {
+        // Handle connection failure as usual
+      });
+  }, []);
+
+  provider.on("accountChanged", (publicKey) => {
+    if (publicKey) {
+      // Set new public key and continue as usual
+      console.log(`Switched to account ${publicKey.toBase58()}`);
+    } else {
+      // Attempt to reconnect to Phantom
+      provider.connect().catch((error) => {
+        // Handle connection failure
+      });
+    }
+  });
   /** 지갑 연결 */
   const connectWellet = async () => {
-    const { solana } = window;
-    if (solana) {
-      const response = await solana.connect();
-      console.log("Connected with Public Key:", response.publicKey.toString());
+    try {
+      const resp = await provider.connect();
+      console.log(resp.publicKey.toString());
+      console.log('지갑이 연결되어 있는지',provider.isConnected);
+    } catch (err) {
+      console.log(err);
     }
+    provider.on("connect", (publicKey) => {
+      console.log(publicKey.toBase58());
+    });
+  
+    // Forget user's public key once they disconnect
+    provider.on("disconnect", () => {
+      console.log('이때 지갑주소를 null로 바꾼다');
+    });
   };
+
+  /*------------------------1-----------------------------*/
   /** 비밀키로 키페어만들기 */
   const privateKeyMakekeyPair = async () => {
     let publickey = Keypair.fromSecretKey(
@@ -1196,11 +1247,39 @@ function App() {
     console.log(`transfer txhash: ${await connection.sendTransaction(tx, [payer])}`);
 
   };
-  const test = () => {
-    
-    console.log(
-      "4gqhY7SiBec7ZG7x6cLrxzTc4PxJraZ9ozKcMobYYZdX"
+  /*------------------------------------*/
+  /** metaplex이용해서 토큰 메타데이터 가져오기 */
+  const metaplexGetTokenMetadata = async () => {
+    let mintPubkey = new PublicKey(
+      "FhunwAjBLmmgH4gAavJn8FoRZpT9D7yYNJfnHHFUhQTk"
     );
+    let tokenmetaPubkey = await findMetadataPda(mintPubkey);
+    console.log(tokenmetaPubkey.toBase58());
+    // const tokenmeta = await load(connection, tokenmetaPubkey);
+    // console.log(tokenmeta);
+  }
+  /**  */
+  const test = async () => {
+    const getProvider = () => {
+      if ('phantom' in window) {
+        const provider = window.phantom?.solana;
+    
+        if (provider?.isPhantom) {
+          return provider;
+        }
+      }
+      window.open('https://phantom.app/', '_blank');
+    };
+
+    const provider = getProvider();
+    try {
+      const resp = await provider.connect();
+      console.log(resp.publicKey.toString());
+      // 26qv4GCcx98RihuK3c4T6ozB3J7L6VwCuFVc7Ta2A3Uo 
+  } catch (err) {
+      // { code: 4001, message: 'User rejected the request.' }
+  }
+   
   };
   return (
     <div className="App">
@@ -1228,8 +1307,9 @@ function App() {
           style={{ width: "220px", height: "50px" }}
           onClick={connectWellet}
         >
-          1. 지갑연결
+          1. 지갑연결 phantom doc
         </button>
+        <br />
         <br />
         <button
           style={{ width: "220px", height: "50px" }}
@@ -1406,6 +1486,15 @@ function App() {
         <br />
         <button style={{ width: "220px", height: "50px" }} onClick={mintToGetTokenBalanceAndTransfer}>
           5.mint하고 발행개수찾고 트랜스퍼 해보기
+        </button>
+        <br />
+        <br />
+        <button style={{ width: "220px", height: "50px" }} onClick={metaplexGetTokenMetadata}>
+          1. meta data 가져오기
+        </button>
+        <br />
+        <button style={{ width: "220px", height: "50px" }} >
+          2
         </button>
         <br />
         <button style={{ width: "220px", height: "50px" }} onClick={test}>
