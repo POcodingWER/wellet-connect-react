@@ -1,5 +1,5 @@
 import "./App.css";
-import { nftStorage, } from "@metaplex-foundation/js-plugin-nft-storage";
+import { nftStorage } from "@metaplex-foundation/js-plugin-nft-storage";
 import {
   keypairIdentity,
   Metaplex,
@@ -8,7 +8,7 @@ import {
   toDateTime,
   getMerkleRoot,
   getMerkleProof,
-  findMetadataPda
+  findMetadataPda,
 } from "@metaplex-foundation/js";
 import {
   clusterApiUrl,
@@ -37,7 +37,7 @@ import {
   createTransferCheckedInstruction,
 } from "@solana/spl-token";
 
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import * as bs58 from "bs58";
 
 const connection = new Connection(clusterApiUrl("devnet"));
@@ -53,8 +53,6 @@ const getProvider = () => {
   window.open("https://phantom.app/", "_blank");
 };
 
-
-
 function App() {
   const provider = getProvider();
   const [address, setAddress] = useState(
@@ -63,21 +61,23 @@ function App() {
   const [nft, setNft] = useState(null);
   const [payer, setpayer] = useState("");
   const [candyMachineAdr, setCandyMachineAdr] = useState("");
-  const [mintingAdr, setMintingAdr] = useState("FVoahsR3Z6GK2cPiPXBWxZD5ZLFo5MfdpLJB2BGZnKej");
+  const [mintingAdr, setMintingAdr] = useState(
+    "FVoahsR3Z6GK2cPiPXBWxZD5ZLFo5MfdpLJB2BGZnKej"
+  );
   const fetchNft = async () => {
     const asset = await metaplex
       .nfts()
       .findByMint({ mintAddress: new PublicKey(address) });
     setNft(asset);
   };
-  
+
   /*------------------------1-----------------------------*/
   useEffect(() => {
     // Will either automatically connect to Phantom, or do nothing.
     provider
       .connect({ onlyIfTrusted: true })
       .then(({ publicKey }) => {
-        console.log('자동연결',publicKey.toBase58());
+        console.log("자동연결", publicKey.toBase58());
         // Handle successful eager connection
       })
       .catch(() => {
@@ -101,19 +101,63 @@ function App() {
     try {
       const resp = await provider.connect();
       console.log(resp.publicKey.toString());
-      console.log('지갑이 연결되어 있는지',provider.isConnected);
+      console.log("지갑이 연결되어 있는지", provider.isConnected);
     } catch (err) {
       console.log(err);
     }
     provider.on("connect", (publicKey) => {
       console.log(publicKey.toBase58());
     });
-  
+
     // Forget user's public key once they disconnect
     provider.on("disconnect", () => {
-      console.log('이때 지갑주소를 null로 바꾼다');
+      console.log("이때 지갑주소를 null로 바꾼다");
     });
   };
+  /** 사인후 트랜잭션보내기 */
+  const walletSendTx = async () => {
+    const transaction = new Transaction().add(
+      SystemProgram.transfer({
+        fromPubkey: payer.publicKey,
+        toPubkey: new PublicKey("3g4cE28FuqYq45TmkdatMogdu3Ronq7HHnxYzhrSCJ4f"),
+        lamports: 0.3 * LAMPORTS_PER_SOL,
+      })
+    );
+    let hash = await connection.getRecentBlockhash();
+    transaction.recentBlockhash = hash.blockhash; //블럭해시추가하고
+    console.log("트랜잭션에 블럭해시 넣어줌", transaction.recentBlockhash);
+    transaction.feePayer = provider.publicKey;
+
+    // console.log('1번 사인하고바로 보내기');
+    // let { signature } = await provider.signAndSendTransaction(transaction);
+    // console.log('사인하고 바로 보내기 리턴값 Tx address:',signature);
+    // console.log('지갑으로 토큰생성', await connection.getSignatureStatus(signature));
+
+    console.log("2번 사인하고 나중에 보내기");
+    const signedTransaction = await provider.signTransaction(transaction);
+    console.log("사인된상태 tx 전송은x", signedTransaction);
+    const signature1 = await connection.sendRawTransaction(
+      signedTransaction.serialize()
+    );
+    console.log(
+      "이제 사인된 트잭보내기 너무늦게 사인을 보내면 poh여서그런지 실패됨",
+      signature1
+    );
+
+    /** 트랜잭션 여러게 보낼때 사용 */
+    // const signedTransactions = await provider.signAllTransactions(transactions);
+  };
+  /** 지갑으로 서명창 띄우기 */
+  const walletSingMessage = async () => {
+    console.log('서명창 띄우기',);
+    const message = `머 홀더인증을 하려면여기에 싸인을해야됩니다? 이런느낌`;
+    const encodedMessage = new TextEncoder().encode(message);
+    console.log('message encode',encodedMessage);
+    const signedMessage = await provider.signMessage(encodedMessage, "utf8");
+    console.log(signedMessage);
+    const signature = bs58.encode(signedMessage.signature);
+    console.log('서버에서 비교할 사인',signature);
+  }
 
   /*------------------------1-----------------------------*/
   /** 비밀키로 키페어만들기 */
@@ -339,8 +383,7 @@ function App() {
   const metadataUpload = async () => {
     //metaplex  기초
     console.log("default", metaplex);
-    metaplex.use(keypairIdentity(payer))
-    .use(nftStorage()); //metadata maker
+    metaplex.use(keypairIdentity(payer)).use(nftStorage()); //metadata maker
 
     const { uri } = await metaplex.nfts().uploadMetadata({
       name: "fufufu #1",
@@ -802,7 +845,7 @@ function App() {
       "2vjCrmEFiN9CLLhiqy8u1JPh48av8Zpzp3kNkdTtirYG",
       "AT8nPwujHAD14cLojTcB1qdBzA1VXnT6LVGuUd6Y73Cy",
     ];
-   
+
     console.log(getMerkleRoot(allowList));
     console.log("allowList", allowList);
 
@@ -823,7 +866,7 @@ function App() {
   /** 민팅전  마지막세팅*/
   const candymachineItemFinalSeting = async () => {
     metaplex.use(keypairIdentity(payer));
-    console.log('loading');
+    console.log("loading");
     const { candyMachine } = await metaplex.candyMachines().create({
       sellerFeeBasisPoints: 333, // 3.33%
       itemsAvailable: toBigNumber(6), //몇개 발행
@@ -888,7 +931,7 @@ function App() {
       .candyMachines()
       .refresh(candyMachine);
     console.log("캔디머시 이템인서트완료 ", updatedCandyMachine);
-    setMintingAdr(updatedCandyMachine)
+    setMintingAdr(updatedCandyMachine);
   };
   /** minting start */
   const mintingstart = async () => {
@@ -896,7 +939,7 @@ function App() {
     const candyMachine = await metaplex.candyMachines().findByAddress({
       address: new PublicKey("471qmaiF6TLhUT1ExPkz6xwpPAdYzWXJCjgnpgzQa7b7"),
     });
-    
+
     console.log(
       "찾은 캔디머신 주소",
       candyMachine.address.toBase58(),
@@ -913,13 +956,13 @@ function App() {
     //   ],
     // });
     // console.log('item insert');
-    
+
     const collectionUpdateAuthority = metaplex.identity().publicKey;
-    //내생각에 collectionUpdateAuthority 계정을통해서 컬랙션이랑 캔디머신이 연결되어있어서그런거같음 그래서 Authority 나눠서 생성해야될듯 
+    //내생각에 collectionUpdateAuthority 계정을통해서 컬랙션이랑 캔디머신이 연결되어있어서그런거같음 그래서 Authority 나눠서 생성해야될듯
     const { nft } = await metaplex.candyMachines().mint({
       candyMachine,
       collectionUpdateAuthority,
-      owner:new PublicKey('3g4cE28FuqYq45TmkdatMogdu3Ronq7HHnxYzhrSCJ4f')
+      owner: new PublicKey("3g4cE28FuqYq45TmkdatMogdu3Ronq7HHnxYzhrSCJ4f"),
     });
 
     console.log("민팅완료", nft);
@@ -929,7 +972,7 @@ function App() {
     metaplex.use(keypairIdentity(payer));
 
     const thirdPartySigner = Keypair.generate();
-    console.log('thirdPartySigner',thirdPartySigner.publicKey.toBase58());
+    console.log("thirdPartySigner", thirdPartySigner.publicKey.toBase58());
     const { candyMachine } = await metaplex.candyMachines().create({
       itemsAvailable: toBigNumber(3),
       sellerFeeBasisPoints: 333, // 3.33%
@@ -939,24 +982,20 @@ function App() {
       },
       guards: {
         thirdPartySigner: { signerKey: thirdPartySigner.publicKey }, //3자지갑세팅
-        mintLimit: { id: 1, limit: 2 },           //아이디1개당 2개만 가능
+        mintLimit: { id: 1, limit: 2 }, //아이디1개당 2개만 가능
       },
     });
-    console.log(
-      "캔디머신생성",
-      candyMachine.address.toBase58(),
-      candyMachine
-    );
+    console.log("캔디머신생성", candyMachine.address.toBase58(), candyMachine);
 
     await metaplex.candyMachines().insertItems({
-        candyMachine,
-        items: [
-          { name: "bellygom #1", uri: "https://belly.bellygom.world/1.json" },
-          { name: "bellygom #2", uri: "https://belly.bellygom.world/2.json" },
-          { name: "bellygom #3", uri: "https://belly.bellygom.world/3.json" },
-        ],
-      });
-      console.log('item insert');
+      candyMachine,
+      items: [
+        { name: "bellygom #1", uri: "https://belly.bellygom.world/1.json" },
+        { name: "bellygom #2", uri: "https://belly.bellygom.world/2.json" },
+        { name: "bellygom #3", uri: "https://belly.bellygom.world/3.json" },
+      ],
+    });
+    console.log("item insert");
 
     const collectionUpdateAuthority = metaplex.identity().publicKey;
 
@@ -965,18 +1004,21 @@ function App() {
         candyMachine,
         collectionUpdateAuthority,
         guards: {
-          thirdPartySigner: { signer: thirdPartySigner },   //제3자가 있어야 민팅가능 3자지갑은 만든사람이알겠지?
+          thirdPartySigner: { signer: thirdPartySigner }, //제3자가 있어야 민팅가능 3자지갑은 만든사람이알겠지?
         },
       });
-      console.log('엔프트 발행',nft);
+      console.log("엔프트 발행", nft);
     }
-  }
+  };
   /** 가드 그룹 나눠서 민팅 */
   const guardGroupMinting = async () => {
     metaplex.use(keypairIdentity(payer));
 
     const thirdPartySigner = Keypair.generate();
-    console.log("트랜잭션 용량이커서 안된다함 thirdPartySigner", thirdPartySigner.publicKey.toBase58());
+    console.log(
+      "트랜잭션 용량이커서 안된다함 thirdPartySigner",
+      thirdPartySigner.publicKey.toBase58()
+    );
 
     const { candyMachine } = await metaplex.candyMachines().create({
       itemsAvailable: toBigNumber(3),
@@ -1021,11 +1063,7 @@ function App() {
       ],
     });
 
-    console.log(
-      "캔디머신생성",
-      candyMachine.address.toBase58(),
-      candyMachine
-    );
+    console.log("캔디머신생성", candyMachine.address.toBase58(), candyMachine);
 
     await metaplex.candyMachines().insertItems({
       candyMachine,
@@ -1035,7 +1073,7 @@ function App() {
         { name: "bellygom #7", uri: "https://belly.bellygom.world/7.json" },
       ],
     });
-    console.log('insert success');
+    console.log("insert success");
 
     const collectionUpdateAuthority = metaplex.identity().publicKey;
     const { nft } = await metaplex.candyMachines().mint({
@@ -1044,7 +1082,9 @@ function App() {
       group: "nft",
       guards: {
         // thirdPartySigner: { signer: thirdPartySigner },
-        nftPayment: { mint: new PublicKey("FUvY7fc4s4PFjt32DxSXBkE3VaQezQJwmqgudJLdFWNt") },
+        nftPayment: {
+          mint: new PublicKey("FUvY7fc4s4PFjt32DxSXBkE3VaQezQJwmqgudJLdFWNt"),
+        },
       },
     });
     console.log("엔프트 발행", nft);
@@ -1052,7 +1092,7 @@ function App() {
   /*---------------------------------------------*/
   /** 트랜잭션 만들고 보내기*/
   const mkaetransactionAndSend = async () => {
-    console.log('loading');
+    console.log("loading");
     let fromKeypair = Keypair.generate();
     const airdropSignature = await connection.requestAirdrop(
       fromKeypair.publicKey,
@@ -1077,12 +1117,14 @@ function App() {
         lamports: LAMPORTS_PER_SOL,
       })
     );
-    
-   console.log(await sendAndConfirmTransaction(connection, transaction, [fromKeypair]))
+
+    console.log(
+      await sendAndConfirmTransaction(connection, transaction, [fromKeypair])
+    );
   };
   /** 코인 tx전송해보기 */
   const getBalanceAndSendCoin = async () => {
-    console.log('loading');
+    console.log("loading");
     const feePayer = Keypair.fromSecretKey(
       Uint8Array.from([
         251, 11, 45, 81, 62, 13, 86, 73, 81, 22, 130, 118, 64, 244, 168, 106,
@@ -1095,14 +1137,15 @@ function App() {
     let balance = await connection.getBalance(feePayer.publicKey);
     console.log(`form${balance / LAMPORTS_PER_SOL} SOL`);
 
-    
-    balance = await connection.getBalance(new PublicKey('Bao3ZumN6trNwe4HU1XMwm4kfXpTKZ56Jw3MYLsUuhiK'));
+    balance = await connection.getBalance(
+      new PublicKey("Bao3ZumN6trNwe4HU1XMwm4kfXpTKZ56Jw3MYLsUuhiK")
+    );
     console.log(`to ${balance / LAMPORTS_PER_SOL} SOL`);
 
     let tx = new Transaction().add(
       SystemProgram.transfer({
         fromPubkey: feePayer.publicKey,
-        toPubkey: new PublicKey('Bao3ZumN6trNwe4HU1XMwm4kfXpTKZ56Jw3MYLsUuhiK'),
+        toPubkey: new PublicKey("Bao3ZumN6trNwe4HU1XMwm4kfXpTKZ56Jw3MYLsUuhiK"),
         lamports: 0.3 * LAMPORTS_PER_SOL,
       })
     );
@@ -1111,7 +1154,7 @@ function App() {
     console.log(tx.feePayer);
     let txhash = await connection.sendTransaction(tx, [feePayer]);
     console.log(`txhash: ${txhash}`);
-  }
+  };
   /**민트 후 tx  */
   const createMintSendTx = async () => {
     let mint = Keypair.generate();
@@ -1153,7 +1196,9 @@ function App() {
       이런 방식을 사용하는 것을 추천하지 않는다, 사용자들이 많은 다른 계정을 저장하게 한다.
       토큰 계정 관리를 어렵게 하다`
     );
-    const mintPubkey = new PublicKey('8LUdKKUYbGPSZJXbdzjdsEHZt6bkTcBP5DXWwujUfFzV')
+    const mintPubkey = new PublicKey(
+      "8LUdKKUYbGPSZJXbdzjdsEHZt6bkTcBP5DXWwujUfFzV"
+    );
     let tokenAccount = Keypair.generate();
     console.log(`ramdom token address: ${tokenAccount.publicKey.toBase58()}`);
 
@@ -1168,7 +1213,11 @@ function App() {
         programId: TOKEN_PROGRAM_ID,
       }),
       // init token account
-      createInitializeAccountInstruction(tokenAccount.publicKey, mintPubkey, payer.publicKey)
+      createInitializeAccountInstruction(
+        tokenAccount.publicKey,
+        mintPubkey,
+        payer.publicKey
+      )
     );
 
     console.log(
@@ -1190,8 +1239,10 @@ function App() {
       payer.publicKey, // owner
       false // allow owner off curve
     );
-    console.log(`이거는 최초 한번만 발행가능 주소가 계속같으니깐  ata: ${ata.toBase58()}`);
-    
+    console.log(
+      `이거는 최초 한번만 발행가능 주소가 계속같으니깐  ata: ${ata.toBase58()}`
+    );
+
     // tx = new Transaction();
     // tx.add(
     //   createAssociatedTokenAccountInstruction(
@@ -1204,22 +1255,27 @@ function App() {
     // console.log(`create ata txhash: ${await connection.sendTransaction(tx, [payer])}`);
 
     tokenAccount = await getAccount(connection, ata);
-    console.log('get Account:',tokenAccount);
-  }
+    console.log("get Account:", tokenAccount);
+  };
   /** 민트하고 토큰 찾고 트랜스퍼 */
   const mintToGetTokenBalanceAndTransfer = async () => {
-
-    const mintPubkey = new PublicKey("8LUdKKUYbGPSZJXbdzjdsEHZt6bkTcBP5DXWwujUfFzV");
-    const tokenAccount1Pubkey = new PublicKey("DNd88dpZpaVDg7Ve2P9sMMzG4h2rcW67PYGWEUhjLXjZ");
-    const tokenAccount2Pubkey = new PublicKey("dwmDPN32t2E1JUy7nYZ97oFPvMffuAC7nFuS3EsdiJa");
-    console.log('2번방식 ATA',tokenAccount1Pubkey.toBase58());
-    console.log('1번방식 Random',tokenAccount2Pubkey.toBase58());
+    const mintPubkey = new PublicKey(
+      "8LUdKKUYbGPSZJXbdzjdsEHZt6bkTcBP5DXWwujUfFzV"
+    );
+    const tokenAccount1Pubkey = new PublicKey(
+      "DNd88dpZpaVDg7Ve2P9sMMzG4h2rcW67PYGWEUhjLXjZ"
+    );
+    const tokenAccount2Pubkey = new PublicKey(
+      "dwmDPN32t2E1JUy7nYZ97oFPvMffuAC7nFuS3EsdiJa"
+    );
+    console.log("2번방식 ATA", tokenAccount1Pubkey.toBase58());
+    console.log("1번방식 Random", tokenAccount2Pubkey.toBase58());
 
     let tx = new Transaction();
     tx.add(
       createMintToCheckedInstruction(
-        mintPubkey,   //토큰 주소
-        tokenAccount1Pubkey,  //토큰 어카운트 주소
+        mintPubkey, //토큰 주소
+        tokenAccount1Pubkey, //토큰 어카운트 주소
         payer.publicKey, // mint auth
         1, // amount
         0 // decimals
@@ -1229,8 +1285,12 @@ function App() {
       `txhash: ${await sendAndConfirmTransaction(connection, tx, [payer])}`
     );
 
-    let tokenAccountBalance = await connection.getTokenAccountBalance(tokenAccount1Pubkey);
-    console.log(`decimals: ${tokenAccountBalance.value.decimals}, amount: ${tokenAccountBalance.value.amount}`);
+    let tokenAccountBalance = await connection.getTokenAccountBalance(
+      tokenAccount1Pubkey
+    );
+    console.log(
+      `decimals: ${tokenAccountBalance.value.decimals}, amount: ${tokenAccountBalance.value.amount}`
+    );
 
     tx = new Transaction();
     tx.add(
@@ -1244,8 +1304,9 @@ function App() {
       )
     );
 
-    console.log(`transfer txhash: ${await connection.sendTransaction(tx, [payer])}`);
-
+    console.log(
+      `transfer txhash: ${await connection.sendTransaction(tx, [payer])}`
+    );
   };
   /*------------------------------------*/
   /** metaplex이용해서 토큰 메타데이터 가져오기 */
@@ -1257,29 +1318,28 @@ function App() {
     console.log(tokenmetaPubkey.toBase58());
     // const tokenmeta = await load(connection, tokenmetaPubkey);
     // console.log(tokenmeta);
-  }
+  };
   /**  */
   const test = async () => {
     const getProvider = () => {
-      if ('phantom' in window) {
+      if ("phantom" in window) {
         const provider = window.phantom?.solana;
-    
+
         if (provider?.isPhantom) {
           return provider;
         }
       }
-      window.open('https://phantom.app/', '_blank');
+      window.open("https://phantom.app/", "_blank");
     };
 
     const provider = getProvider();
     try {
       const resp = await provider.connect();
       console.log(resp.publicKey.toString());
-      // 26qv4GCcx98RihuK3c4T6ozB3J7L6VwCuFVc7Ta2A3Uo 
-  } catch (err) {
+      // 26qv4GCcx98RihuK3c4T6ozB3J7L6VwCuFVc7Ta2A3Uo
+    } catch (err) {
       // { code: 4001, message: 'User rejected the request.' }
-  }
-   
+    }
   };
   return (
     <div className="App">
@@ -1308,6 +1368,20 @@ function App() {
           onClick={connectWellet}
         >
           1. 지갑연결 phantom doc
+        </button>
+        <br />
+        <button
+          style={{ width: "220px", height: "50px" }}
+          onClick={walletSendTx}
+        >
+          1. 지갑으로 tx 보내기
+        </button>
+        <br />
+        <button
+          style={{ width: "220px", height: "50px" }}
+          onClick={walletSingMessage}
+        >
+          1. 지갑으로 서명창 서명하기
         </button>
         <br />
         <br />
@@ -1468,34 +1542,50 @@ function App() {
         </button>
         <br />
         <br />
-        <button style={{ width: "220px", height: "50px" }} onClick={mkaetransactionAndSend}>
+        <button
+          style={{ width: "220px", height: "50px" }}
+          onClick={mkaetransactionAndSend}
+        >
           1. 트랜잭션 생성 보내기
         </button>
         <br />
-        <button style={{ width: "220px", height: "50px" }} onClick={getBalanceAndSendCoin}>
+        <button
+          style={{ width: "220px", height: "50px" }}
+          onClick={getBalanceAndSendCoin}
+        >
           2. 코인 트랜잭션으로 보내기
         </button>
         <br />
-        <button style={{ width: "220px", height: "50px" }} onClick={createMintSendTx}>
+        <button
+          style={{ width: "220px", height: "50px" }}
+          onClick={createMintSendTx}
+        >
           3.민트후 토큰만들기
         </button>
         <br />
-        <button style={{ width: "220px", height: "50px" }} onClick={createTokenAccount}>
+        <button
+          style={{ width: "220px", height: "50px" }}
+          onClick={createTokenAccount}
+        >
           4.토큰 Account 만들기
         </button>
         <br />
-        <button style={{ width: "220px", height: "50px" }} onClick={mintToGetTokenBalanceAndTransfer}>
+        <button
+          style={{ width: "220px", height: "50px" }}
+          onClick={mintToGetTokenBalanceAndTransfer}
+        >
           5.mint하고 발행개수찾고 트랜스퍼 해보기
         </button>
         <br />
         <br />
-        <button style={{ width: "220px", height: "50px" }} onClick={metaplexGetTokenMetadata}>
+        <button
+          style={{ width: "220px", height: "50px" }}
+          onClick={metaplexGetTokenMetadata}
+        >
           1. meta data 가져오기
         </button>
         <br />
-        <button style={{ width: "220px", height: "50px" }} >
-          2
-        </button>
+        <button style={{ width: "220px", height: "50px" }}>2</button>
         <br />
         <button style={{ width: "220px", height: "50px" }} onClick={test}>
           tttttttttttttt
