@@ -9,7 +9,6 @@ import {
   getMerkleRoot,
   getMerkleProof,
   findMetadataPda,
-  token,
 } from "@metaplex-foundation/js";
 import {
   clusterApiUrl,
@@ -37,6 +36,7 @@ import {
   createMintToCheckedInstruction,
   createTransferCheckedInstruction,
 } from "@solana/spl-token";
+
 import { useState, useEffect } from "react";
 import * as bs58 from "bs58";
 
@@ -50,7 +50,7 @@ const getProvider = () => {
       return provider;
     }
   }
-  // window.open("https://phantom.app/", "_blank");
+  window.open("https://phantom.app/", "_blank");
 };
 
 function App() {
@@ -200,7 +200,7 @@ function App() {
     });
 
     console.log(
-      `컬랙션주소: ${collectionNft.address.toBase58()}\nmetadataAddress: ${collectionNft.metadataAddress.toBase58()}\nupdateAuthorityAddress: ${collectionNft.updateAuthorityAddress.toBase58()}`,
+      `민터주소: ${collectionNft.address.toBase58()}\nmetadataAddress: ${collectionNft.metadataAddress.toBase58()}\nupdateAuthorityAddress: ${collectionNft.updateAuthorityAddress.toBase58()}`,
       collectionNft
     );
 
@@ -933,11 +933,11 @@ function App() {
     console.log("캔디머시 이템인서트완료 ", updatedCandyMachine);
     setMintingAdr(updatedCandyMachine);
   };
-  /** 가드없는 민팅 minting start */
+  /** minting start */
   const mintingstart = async () => {
     metaplex.use(keypairIdentity(payer));
     const candyMachine = await metaplex.candyMachines().findByAddress({
-      address: new PublicKey("2vj4SsBHbcVdC9xMTMdbmRhumx8J4cE7o2woGMhdxWpQ"),// 가드없는 캔디머신 주소만넣으셈
+      address: new PublicKey("471qmaiF6TLhUT1ExPkz6xwpPAdYzWXJCjgnpgzQa7b7"),
     });
 
     console.log(
@@ -1089,203 +1089,6 @@ function App() {
     });
     console.log("엔프트 발행", nft);
   };
-  /*---------------------------------------------*/
-  /** 판매대금 sol 세팅 판매대금 받을 지갑주소 세팅 */
-  const solPaymentSeting = async () => {
-    metaplex.use(keypairIdentity(payer));
-    console.log(metaplex);
-    const { candyMachine } = await metaplex.candyMachines().create({
-      itemsAvailable: toBigNumber(3),
-      sellerFeeBasisPoints: 333, // 3.33%
-      collection: {
-        address: new PublicKey("FdY3ZmDrvShE5bvDMuH1fSndcpx44smxqeWe9bR9nQTW"),
-        updateAuthority: metaplex.identity(),
-      },
-      guards: {
-        solPayment: {
-          amount: sol(1.5),     //판매대금
-          destination: metaplex.identity().publicKey, //판매대금 받을지갑주소
-        },
-      },
-    });
-
-    console.log("솔페이먼트 캔디머신생성", candyMachine.address.toBase58(), candyMachine);
-
-  }
-  /** 판매대금 token 세팅 판매대금받을 관리자 ata로 세팅 */
-  const tokenPaymentSeting = async () => {
-    console.log('loading');
-    metaplex.use(keypairIdentity(payer));
-
-    const tokenMint =  new PublicKey("Gssm3vfi8s65R31SBdmQRq6cKeYojGgup7whkw4VCiQj");   //내지갑 어카운트 말고 진짜 토큰 주소써야되넹
-    const { candyMachine } = await metaplex.candyMachines().create({
-      itemsAvailable: toBigNumber(3),
-      sellerFeeBasisPoints: 333, // 3.33%
-      collection: {
-        address: new PublicKey("FdY3ZmDrvShE5bvDMuH1fSndcpx44smxqeWe9bR9nQTW"),
-        updateAuthority: metaplex.identity(),
-      },
-      guards: {
-        tokenPayment: {
-          amount: token(5),   //토큰설정가격
-          mint: tokenMint,   //토큰 어드레스
-          destinationAta: metaplex.tokens().pdas().associatedTokenAccount({   //토큰받을 ata 주소
-            mint: tokenMint,
-            owner: metaplex.identity().publicKey,
-
-          }),
-        },
-      },
-    });
-
-    console.log(
-      "토큰페이먼트 캔디머신생성",
-      candyMachine.address.toBase58(),
-      "토큰가격",candyMachine.candyGuard.guards.tokenPayment.amount.basisPoints.toString(),
-      "받을주소 ata",candyMachine.candyGuard.guards.tokenPayment.destinationAta.toBase58(),
-      "토큰에 주소",candyMachine.candyGuard.guards.tokenPayment.mint.toBase58(),
-      candyMachine
-    );
-
-
-    await metaplex.candyMachines().insertItems({
-      candyMachine,
-      items: [
-        { name: "bellygom #5", uri: "https://belly.bellygom.world/5.json" },
-        { name: "bellygom #6", uri: "https://belly.bellygom.world/6.json" },
-        { name: "bellygom #7", uri: "https://belly.bellygom.world/7.json" },
-      ],
-    });
-    console.log("item insert");
-
-    const { nft } = await metaplex.candyMachines().mint({
-      candyMachine,
-      collectionUpdateAuthority:metaplex.identity().publicKey,
-    });
-
-    console.log("민팅성공",nft);
-  }
-  /** 토큰 태우면서 민팅 진행 */
-  const tokenBurntSeting = async () => {
-    console.log('loading');
-    metaplex.use(keypairIdentity(payer));
-
-    const tokenMint =  new PublicKey("3TA2wEjGJLT2HGVxy9DBEhVXxkbeC7zYYxLfXcR4ZP6S");
-    
-    const { candyMachine } = await metaplex.candyMachines().create({
-      itemsAvailable: toBigNumber(3),
-      sellerFeeBasisPoints: 333, // 3.33%
-      collection: {
-        address: new PublicKey("FdY3ZmDrvShE5bvDMuH1fSndcpx44smxqeWe9bR9nQTW"),
-        updateAuthority: metaplex.identity(),
-      },
-      guards: {
-        tokenBurn: {
-          amount: token(4),   //소각계수
-          mint: tokenMint,    //토큰주소
-        },
-      },
-    
-    });
-
-    console.log(
-      "토큰burn 캔디머신생성",
-      candyMachine.address.toBase58(),
-      "토큰 burn 수량",
-      candyMachine.candyGuard.guards.tokenBurn.amount.basisPoints.toString(),
-      "토큰 burn 주소",
-      candyMachine.candyGuard.guards.tokenBurn.mint.toBase58(),
-      candyMachine
-    );
-  }
-  /** 토큰게이트 보유수량이상의 유저만 민팅가능 */
-  const tokenGateSeting = async () => {
-    console.log('loading');
-    metaplex.use(keypairIdentity(payer));
-    const tokenMint =  new PublicKey("3TA2wEjGJLT2HGVxy9DBEhVXxkbeC7zYYxLfXcR4ZP6S");
-
-    const { candyMachine } = await metaplex.candyMachines().create({
-      itemsAvailable: toBigNumber(3),
-      sellerFeeBasisPoints: 333, // 3.33%
-      collection: {
-        address: new PublicKey("FdY3ZmDrvShE5bvDMuH1fSndcpx44smxqeWe9bR9nQTW"),
-        updateAuthority: metaplex.identity(),
-      },
-      guards: {
-        tokenGate: {
-          amount: token(300),
-          mint: tokenMint,
-        },
-      },
-    
-    });
-
-    console.log(
-      "토큰gate 캔디머신생성",
-      candyMachine.address.toBase58(),
-      "토큰 gate 수량",
-      candyMachine.candyGuard.guards.tokenGate.amount.basisPoints.toString(),
-      "토큰 gate 주소",
-      candyMachine.candyGuard.guards.tokenGate.mint.toBase58(),
-      candyMachine
-    );
-  }
-  /** 토큰nft페이먼트 세팅 */
-  const NFTPaymentSeting = async () => {
-    console.log('loading');
-    metaplex.use(keypairIdentity(payer));
-
-    const requiredCollectionNft =  new PublicKey("8k1112hjuszTTDhw67i2d2V9vB1XGr13zLXRSBnSuQm6");
-
-    const { candyMachine } = await metaplex.candyMachines().create({
-      itemsAvailable: toBigNumber(3), //발행수량
-      sellerFeeBasisPoints: 333, // 3.33%
-      collection: {
-        address: new PublicKey("FdY3ZmDrvShE5bvDMuH1fSndcpx44smxqeWe9bR9nQTW"),
-        updateAuthority: metaplex.identity(),
-      },
-      guards: {
-        nftPayment: {
-          requiredCollection: requiredCollectionNft,      //nft 컬랙션주소
-          destination: metaplex.identity().publicKey,     //받을지갑주소
-        },
-      },    
-    });
-
-    console.log(
-      "nft payment 캔디머신생성",
-      candyMachine.address.toBase58(),
-      "지불할 nft 콜랙션 주소",
-      candyMachine.candyGuard.guards.nftPayment.requiredCollection.toBase58(),
-      "지불받을 운영자 주소",
-      candyMachine.candyGuard.guards.nftPayment.destination.toBase58(),
-      candyMachine
-    );
-
-    await metaplex.candyMachines().insertItems({
-      candyMachine,
-      items: [
-        { name: "bellygom #5", uri: "https://belly.bellygom.world/5.json" },
-        { name: "bellygom #6", uri: "https://belly.bellygom.world/6.json" },
-        { name: "bellygom #7", uri: "https://belly.bellygom.world/7.json" },
-      ],
-    });
-    console.log("item insert");
-
-    const { nft } = await metaplex.candyMachines().mint({
-      candyMachine,
-      collectionUpdateAuthority:metaplex.identity().publicKey,
-      guards: {
-        nftPayment: {
-          mint: new PublicKey("FhunwAjBLmmgH4gAavJn8FoRZpT9D7yYNJfnHHFUhQTk"),    //컬랙션에 속한 nft 입력해야됨
-        },
-      }
-    });
-
-    console.log("민팅성공",nft);
-    
-  }
-  /** */
   /*---------------------------------------------*/
   /** 트랜잭션 만들고 보내기*/
   const mkaetransactionAndSend = async () => {
@@ -1457,7 +1260,7 @@ function App() {
   /** 민트하고 토큰 찾고 트랜스퍼 */
   const mintToGetTokenBalanceAndTransfer = async () => {
     const mintPubkey = new PublicKey(
-      "GtskibmaB5Q6cpDfADSJcEKk4DH7cd9V6D5eiveuTuy1"
+      "8LUdKKUYbGPSZJXbdzjdsEHZt6bkTcBP5DXWwujUfFzV"
     );
     const tokenAccount1Pubkey = new PublicKey(
       "DNd88dpZpaVDg7Ve2P9sMMzG4h2rcW67PYGWEUhjLXjZ"
@@ -1736,42 +1539,6 @@ function App() {
           onClick={guardGroupMinting}
         >
           2.가드 그룹통해서 민팅
-        </button>
-        <br />
-        <br />
-        <button
-          style={{ width: "220px", height: "50px" }}
-          onClick={solPaymentSeting}
-        >
-          1. 가드 설정 sol 페이먼트(판매대금 설정)
-        </button>
-        <br />
-         <button
-          style={{ width: "220px", height: "50px" }}
-          onClick={tokenPaymentSeting}
-        >
-          2. 가드 설정 token 페이먼트 민팅까지 완료(판매대금 토큰 설정)
-        </button>
-        <br />
-         <button
-          style={{ width: "220px", height: "50px" }}
-          onClick={tokenBurntSeting}
-        >
-          3. 가드 설정 token 소각(삭제할 토큰 설정)
-        </button>
-        <br />
-         <button
-          style={{ width: "220px", height: "50px" }}
-          onClick={tokenGateSeting}
-        >
-          4. 가드 설정 token일정보유수량이상 민팅가능 (판매대금 토큰 설정)
-        </button>
-        <br />
-         <button
-          style={{ width: "220px", height: "50px" }}
-          onClick={NFTPaymentSeting}
-        >
-          5. 가드 설정 nft 결제 (판매대금 nft 설정)
         </button>
         <br />
         <br />
