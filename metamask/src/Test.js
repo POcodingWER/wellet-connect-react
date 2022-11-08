@@ -337,7 +337,7 @@ function Test() {
       collectiblesAbi,
       ethersProvider.getSigner()
     );
-    let result = await collectiblesContract.mintCollectibles(1, {
+    let result = await collectiblesContract.mintCollectibles(2, {
       from: accounts,
     });
     result = await result.wait();
@@ -397,7 +397,20 @@ function Test() {
     result = await result.wait();
     console.log("Transfer From completed", result);
   };
-
+  /** 이벤트 가져오기 */
+  const getEventValue = async () => {
+    const provider = new ethers.providers.JsonRpcProvider("알크미나 인프라 주소넣어주셈");
+    const toBlock =   15893639;
+    const fromBlock = 10093639;
+    let collectiblesContract = new ethers.Contract(
+      "0x74cEDb4F333cB2e554349f498145e02952b920a9",
+      collectiblesAbi,
+      provider
+    );
+    console.log(
+      await collectiblesContract.queryFilter("Transfer", fromBlock, toBlock)
+    );
+  };
   //튜토리얼 끝
   /** minting */
   const minterMinting = async () => {
@@ -687,6 +700,13 @@ function Test() {
             onClick={transferFromButton}
           >
             10. transferFromButton
+          </button>
+          <br />
+          <button
+            style={{ width: "220px", height: "50px" }}
+            onClick={getEventValue}
+          >
+            11. 이벤트 불러오기
           </button>
           <br />
           <br />
