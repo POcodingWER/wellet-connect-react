@@ -4190,3 +4190,15 @@ const 뽑기 = async () => {
   Surprise :${Surprise}, Super :${Super}, Mega :${Mega}, Holic :${Holic}, Belly :${Belly},`);
 };
 // 뽑기();
+
+const a = (hi) => {
+    hi((a)=>{console.log(a)},(b)=>{console.log(b)})
+}
+
+const b = ()=>{
+    a((a,b)=>{
+        a(1);
+        b(2);
+    })
+}
+b()
