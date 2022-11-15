@@ -1,0 +1,174 @@
+.favorlet-modal {
+  display: block;
+}
+.favorlet-modal {
+  display: flex;
+  flex: 1 1 0%;
+  -webkit-box-pack: center;
+  justify-content: center;
+  position: fixed;
+  inset: 0px;
+  z-index: 99;
+  overflow-y: auto;
+}
+.favorlet-modal .d-flex {
+  display: flex;
+}
+.favorlet-modal .d-flex-column {
+  display: flex;
+  flex-direction: column;
+}
+.favorlet-modal .justify-center {
+  -webkit-box-pack: center;
+  justify-content: center;
+}
+.favorlet-modal .pre-line {
+  white-space: pre-line;
+  word-break: keep-all;
+}
+.favorlet-modal .backdrop {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 100%;
+  background-color: #000000;
+  transition: opacity 0.4s ease 0s;
+  opacity: 0.3;
+  z-index: 99;
+  pointer-events: initial;
+  overflow: hidden;
+}
+.favorlet-modal .modal-dialog {
+  pointer-events: auto;
+  min-width: 300px;
+  flex-direction: column;
+  background: #ffffff;
+  border-radius: 16px;
+  z-index: 100;
+  overflow-y: auto;
+  align-self: center;
+  max-height: 100%;
+  text-align: center;
+}
+.favorlet-modal .arrow {
+  width: 24px;
+  height: 24px;
+  margin-top: 12px;
+}
+.favorlet-modal .title {
+  font-size: 1rem;
+  font-weight: bold;
+  line-height: 1.5;
+  margin-left: 10px;
+}
+.favorlet-modal .exit-btn {
+  position: relative;
+  -webkit-box-align: center;
+  align-items: center;
+  cursor: pointer;
+  display: inline-flex;
+  -webkit-box-pack: center;
+  justify-content: center;
+  background-color: transparent;
+  border: none;
+  padding: 4px;
+  margin: 0;
+}
+.favorlet-modal .upperbox {
+  padding: 32px;
+  background-color: #ff6f5e;
+  color: #ffffff;
+}
+.favorlet-modal .qrbox {
+  -webkit-box-align: center;
+  align-items: center;
+  flex-direction: column;
+}
+.favorlet-modal .qrcode {
+  width: 180px;
+  height: 180px;
+  background-color: #ffffff;
+}
+.favorlet-modal .qrcode canvas {
+  max-width: 180px !important;
+  max-height: 180px !important;
+}
+.favorlet-modal .timebox {
+  margin-top: 20px;
+  -webkit-box-align: center;
+  align-items: center;
+}
+.favorlet-modal .timebox .time {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.5);
+}
+.favorlet-modal .timebox .interval {
+  width: 50px;
+  text-align: left;
+  white-space: normal;
+  margin-left: 8px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  line-height: 1.5;
+  color: #ffffff;
+}
+.favorlet-modal .timeguide {
+  margin-top: 16px;
+  font-size: 0.875rem;
+  line-height: 1.43;
+}
+.favorlet-modal .guide {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  flex: 1 1 0%;
+  background-color: #2b2d37;
+  padding: 32px;
+  -webkit-box-pack: center;
+  justify-content: center;
+}
+.favorlet-modal .timebox {
+  margin-top: 20px;
+  -webkit-box-align: center;
+  align-items: center;
+}
+.favorlet-modal .titlebox {
+  -webkit-box-align: center;
+  align-items: center;
+  -webkit-box-pack: justify;
+  justify-content: space-between;
+  padding-bottom: 40px;
+}
+.favorlet-modal .step {
+  flex-direction: column;
+  -webkit-box-align: center;
+  align-items: center;
+  -webkit-box-pack: start;
+  justify-content: flex-start;
+  width: 84px;
+}
+.favorlet-modal .step-circle {
+  border-radius: 50%;
+  padding: 10px;
+  background-color: #404352;
+}
+.favorlet-modal .step img {
+  width: 28px;
+  height: 28px;
+}
+.favorlet-modal .step .text {
+  margin-top: 8px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.5);
+}
+.favorlet-modal .helper {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: #777d85;
+  margin-top: 24px;
+}

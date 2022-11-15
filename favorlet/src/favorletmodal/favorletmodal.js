@@ -1,4 +1,5 @@
 import QRcode from "qrcode"
+import "./favorlet-modal.css";
 
 const lang = {
   en: {
