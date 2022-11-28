@@ -303,6 +303,28 @@ function Test() {
    
   };
 
+  const burn = async () => {
+    const contract = new caverExtKAS.klay.Contract(
+      KIP17.abi,
+      "0x313b28ba15a318338f81ae49373e3cca6ba21fbe"
+    );
+
+    const gas = await contract.methods //가스비 계산해서
+      .burn(421)
+      .estimateGas({
+        from: window.klaytn.selectedAddress,
+      });
+    console.log(gas);
+    
+    const send = await contract.methods
+    .burn(421)
+    .send({
+      from: window.klaytn.selectedAddress,
+      gas
+    })
+    console.log(send);
+  };
+
   return (
     <div className="App">
       <header>
@@ -317,6 +339,7 @@ function Test() {
             <button style={{width:'100px',height:'100px'}} onClick={거래횟수}>3. 거래횟수가져오기</button>
             <button style={{width:'100px',height:'100px'}} onClick={등급별나누기}>3. 거래 등급별나누기</button>
             <button style={{width:'100px',height:'100px'}} onClick={ttttt}>tttttt</button>
+            <button style={{width:'100px',height:'100px'}} onClick={burn}>burn</button>
         </div>
       </header>
     </div>

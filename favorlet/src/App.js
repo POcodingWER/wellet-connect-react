@@ -133,9 +133,9 @@ function App() {
   const favorletSing = async () => {
     const response = await Request.signMessage({
       chainId: 8217, // 해당 체인 id
-      appName: "BlockChainApp", // FAVORLET 앱에 노출
+      appName: "Belly", // FAVORLET 앱에 노출
       from: address, // 서명할 지갑 주소
-      message: "서명할 메세지", // 서명할 메세지
+      message: "BellyGom Holder Verify", // 서명할 메세지
     });
     console.log(response);
 

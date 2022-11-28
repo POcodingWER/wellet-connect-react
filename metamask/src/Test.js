@@ -110,6 +110,42 @@ function Test() {
       console.log("balance Of : ", parseInt(balance));
     }
   };
+  /** 네트워크 이동 함수 */
+  const moveBlockchainNetwork = async () => {
+    const metamask = window.ethereum;
+    if (metamask) {
+      await metamask
+        .request({
+          method: "wallet_switchEthereumChain",
+          // 0x13881 == 80001 == polygon testnet chain ID
+          params: [{ chainId: "0x13881" }],
+        })
+        .then(result => console.log(result))
+        .catch(async (error) => {
+          console.log(error);
+          await metamask.request({
+            method: 'wallet_addEthereumChain',
+            params: [
+              {
+                chainId: "0x13881", // // 0x13881 == 80001 == polygon testnet chain ID
+                chainName: 'Matic Mumbai',
+                // 네트워크 코인 데이터
+                nativeCurrency: {
+                  name:"MATIC",
+                  symbol:"MATIC",
+                  decimals: 18
+                },
+                // 네트워크 RPC URL
+                rpcUrls: ['https://rpc-mumbai.maticvigil.com/'],
+                // 네트워크 scan URL
+                blockExplorerUrls: ['https://mumbai.polygonscan.com']
+              },
+            ],
+          });
+        });
+    }
+  };
+
   /** 트렌잭션 보내기 */
   const sendTx = () => {
     window.ethereum
@@ -635,6 +671,13 @@ function Test() {
             onClick={connectEthWellet}
           >
             1. 지갑연결
+          </button>
+          <br />
+          <button
+            style={{ width: "220px", height: "50px" }}
+            onClick={moveBlockchainNetwork}
+          >
+            1. 네트워크 이동
           </button>
           <br />
           <button style={{ width: "220px", height: "50px" }} onClick={sendTx}>
