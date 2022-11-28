@@ -165,34 +165,6 @@ function App() {
     reader.readAsBinaryString(input.files[0]);
   };
 
-  const makeExcel = async () => {
-    const creds ={
-      "type": "service_account",
-      "project_id": "fingerversebeelygom",
-      "private_key_id": "65c6b0eb0a468915d48fc19fc00320f0238bb6ef",
-      "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCy7SGK2g/S6fHH\nzNfxC0I+emHl+VlAdnbxlf3ojAb3jCCFzpcmtD41h/Z57VFcvfyr9/XtmIs9aOrk\nAQxoeY3aXbmzCt7CwRYgqMUGaT50I0dWwQURZC1jQtafQHk5q4o6Wchar1HlR7EL\nbhjtkkXEyqx2Fbt2BpVSS2t0uZH+l4W6dBxDPD5ahNhO1h/F9FpoWnUl1wzhfzdo\nYU8lZloFtJwdrMypflvSycNm9DqYSt1vw5MDcf7yVgApxCRRDiOQPqS7ow5THysc\nTwGajq7Sgg4jyX4/KWZle/i8GyMdErDc/6MR6rorOIU7L94BUnRn2UeQedC93Noo\nY/AcPgApAgMBAAECggEAAosrP95VYcFj3oCrmxP2t99yvHud9AZUQTGbyf5bVNsV\nubStHg/G1nt7TQA477TWJ7GPMO2dfEXmhmHEJe1cKtwVUCNlUKuJ+KuH1KjAbxNy\n4zcp5dDucdKf5Bt4kki0Q2Th26x2mDE7ryIqBA7hPvZ8yM5BgBdcOZNh+d4mfbaT\nJb9QvXDgqVUJrQp20C+bMewOStc7dE078gzXp8qhIknX/CUd4IuD6yVlPzuho/vV\nOE+G4WSNC8tFTU83gQZrfZ4BRrPXFvUVJR6XU2485m0g0MHQsEbo9oqRUcpF7+F4\nYkDI37gkzJpnrtkaGy2InvCVfpyY3w2+56nebr3b1QKBgQDXM8ks9wqP9SgXEOhJ\n6fzA3hUnUzSmPx/ckKY5/dQXy7CcvltI8c8oFyvYrPTg0hAU+mlLhGJLdH/dO78B\n2E1EOKj9YlKbmflJoYEDYuI9OofOl9yG/aBgBw3XefRMW/fe4dklV+eU65TJwMH1\nFStN6mkxnYdkqf4c6MvqsWOWdQKBgQDU2Mu296tKBs4qRZgRXX7jsQr7wMRzV87k\nzvoJlk4WIOZQzm0iB9RxntEaZM/hEX7ITRvujQZgK4YNktbgerekwZlaahKm4zgq\nD/YJXAOw/dyGpWoIKJydcEqz7ZWjM7DfJeZilPZQfKbX0XlBvpImtA+1Is0JwXwM\nW96IahiUZQKBgDh2euMUUi4hKYqbwgaaoNlNq4ks2JSB3W82eJaglYREyirl+vdx\nkmO3aKaqAnn2Q4fth7DrpAqeH2pBYcUvJl6u6w/IO1peFL0P5dSonilocPdwesjk\nRK7NSwFtGv7p5mgRI7MblERLZzdkHr+Z9Um1JjKBXWO5AlY9cjs6naF9AoGAcHZs\njSyn8OFPpb5H70T7estdBlCAfIF07CkArHgiokaX6zJnL4f7lF1aFxwVStK3rpYv\noAgbyky09A8WQl4VEpTItqE9YbjFQFRWp/Nab/ZywyI7uDvdJMLkddWfLzBs0Dty\nU7xpuXVjor0n2Lkc+B5D/m148SKurMkN9/43JpECgYBWQurIQWqEFy5my6xk5ZoN\nJCRmnoVAVlPxg6Zum4juJk+/0tPuuBuZXRaLhW7QFVDbkAoZ1mMnyKIuXmKEmGdq\nzOJYQYQyaHTM1PZkjtlzZT2179GprlV7M/n7W+NFHacr77VEMA6HAgsPMvEoN72P\nzhFG4IRbjMT24NGIFGBwUw==\n-----END PRIVATE KEY-----\n",
-      "client_email": "bellygomtransaction-history@fingerversebeelygom.iam.gserviceaccount.com",
-      "client_id": "110983533543049761912",
-      "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-      "token_uri": "https://oauth2.googleapis.com/token",
-      "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-      "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/bellygomtransaction-history%40fingerversebeelygom.iam.gserviceaccount.com"
-    }
-
-    // const authorize = new google.auth.JWT(client_email, null, private_key, [
-    //   'https://www.googleapis.com/auth/spreadsheets',
-    // ]);
-    
-    // const googleSheet = google.sheets({
-    //   version: 'v4',
-    //   auth: authorize,
-    // });
-   
-    // const context = await googleSheet.spreadsheets.values.get({
-    //   spreadsheetId: 'spread sheet ID',
-    //   range: 'A1:A3',
-    // });
-  }
 
   return (
     <div className="App">
@@ -228,7 +200,6 @@ function App() {
           <input type="file" onChange={(e) => readExcel(e)}></input>
           <button
             style={{ width: "220px", height: "50px" }}
-            onClick={makeExcel}
           >
             엑셀꾸미기
 
