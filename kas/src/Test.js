@@ -304,25 +304,26 @@ function Test() {
   };
 
   const burn = async () => {
-    const contract = new caverExtKAS.klay.Contract(
-      KIP17.abi,
-      "0x313b28ba15a318338f81ae49373e3cca6ba21fbe"
-    );
+    // const contract = new caverExtKAS.klay.Contract(
+    //   KIP17.abi,
+    //   "0x313b28ba15a318338f81ae49373e3cca6ba21fbe"
+    // );
 
-    const gas = await contract.methods //가스비 계산해서
-      .burn(421)
-      .estimateGas({
-        from: window.klaytn.selectedAddress,
-      });
-    console.log(gas);
+    // const gas = await contract.methods //가스비 계산해서
+    //   .burn(421)
+    //   .estimateGas({
+    //     from: window.klaytn.selectedAddress,
+    //   });
+    // console.log(gas);
     
-    const send = await contract.methods
-    .burn(421)
-    .send({
-      from: window.klaytn.selectedAddress,
-      gas
-    })
-    console.log(send);
+    // const send = await contract.methods
+    // .burn(421)
+    // .send({
+    //   from: window.klaytn.selectedAddress,
+    //   gas
+    // })
+    const unixTime = await caver.rpc.klay.getBlock(107889475).then(res => parseInt(res.timestamp, 16));
+    console.log(unixTime);
   };
 
   return (
