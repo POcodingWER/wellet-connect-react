@@ -144,6 +144,70 @@ function App() {
     console.log('주소값에 서명한 사인값',result.signature);
 
   };
+ 
+  const favorletSendcoin = async () => {
+    const response = await Request.sendCoin({
+      appName: '코인전송',
+      chainId: 8217,
+      transactions:[
+       {  from: "0xb8db26816b27aa95c76675e7c7e74cf9d62289bc", // 코인을 전송할 주소
+          to: "0xbb2205461e27D5CD017D6ed74e23904817f943a0", // 코인을 받을 주소
+          value: "3000000000000000", // 전송할 코인의 양
+        }
+      ]
+    })
+    console.log(response);
+
+    const result = await getRes(response.requestId);// Request를 통해 받은 requestId 
+    console.log(result);
+    console.log('주소값에 서명한 사인값',result.signature);
+
+  };
+  const TRANSFER_ABI=  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "transferFrom",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+  const favorletTransaction = async () => {
+    const response = await Request.executeContract({
+      appName: '코인전송',
+      chainId: 8217,
+      transactions: [
+        {
+          from: "0xb8db26816b27aa95c76675e7c7e74cf9d62289bc", // 트랜잭션을 호출할 지갑 주소
+          to: "0xc2247baccbc7f23b45f95526dcb7fc610beb73ae", // 호출되는 컨트랙트 주소
+          value: "0", // 호출하는 abi 함수가 payable 인 경우 플랫폼 코인 전송
+          abi: JSON.stringify([TRANSFER_ABI]), // 트랜잭션을 발생시키기 위한 abi
+          params: `["0xb8db26816b27aa95c76675e7c7e74cf9d62289bc",0xbb2205461e27D5CD017D6ed74e23904817f943a0", 346]`, // 트랜잭션을 발생시키기 위한 abi 함수의 파라미터
+          functionName: "transferFrom", // abi에서 호출 하려는 함수 이름
+        },
+      ],
+    })
+    console.log(response);
+
+    const result = await getRes(response.requestId);// Request를 통해 받은 requestId 
+    console.log(result);
+    console.log('주소값에 서명한 사인값',result.signature);
+
+  };
   const readExcel = (e) => {
     var input = e.target;
     var reader = new FileReader();
@@ -195,6 +259,18 @@ function App() {
             onClick={favorletSing}
           >
             사인요청
+          </button>
+          <button
+            style={{ width: "220px", height: "50px" }}
+            onClick={favorletSendcoin}
+          >
+            코인전송
+          </button>
+          <button
+            style={{ width: "220px", height: "50px" }}
+            onClick={favorletTransaction}
+          >
+            favorletTransaction
           </button>
           <br />
           <input type="file" onChange={(e) => readExcel(e)}></input>
